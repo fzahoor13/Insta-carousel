@@ -581,9 +581,10 @@ details.goals-panel summary{
   gap:4px;
   color:var(--text-muted);
 }
-.body-measure-delta-up{ color:var(--badge-duration); }
-.body-measure-delta-down{ color:var(--bar-sage-strong); }
-.body-measure-delta-flat{ color:var(--text-muted); }
+.delta-good{ color:var(--bar-sage-strong); }
+.delta-bad{ color:var(--badge-duration); }
+.delta-flat{ color:var(--text-muted); }
+.stat-delta{ font-size:15px; font-weight:600; margin-top:6px; }
 .body-row{
   background:var(--card-white);
   border:1px solid var(--track-alt);
@@ -656,9 +657,10 @@ details.goals-panel summary{
   gap:24px;
   margin-top:130px;
 }
-.stats-grid .stat-card{ padding:44px 20px; }
+.stats-grid .stat-card{ padding:36px 20px; }
 .stats-grid .stat-value{ font-size:52px; }
 .stats-grid .stat-label{ font-size:22px; }
+.stats-grid .stat-delta{ font-size:17px; }
 
 /* ---------- Progress trend dashboard (internal only, not exported) ---------- */
 .trend-dashboard{ width:100%; }
@@ -1287,6 +1289,9 @@ details.goals-panel summary{
 
   function renderWeekRecapTitleSlide(){
     var w = state.weekly, g = state.goals;
+    var workoutsDelta = computeWeekDelta('weeklyWorkoutsDone', num(w.weeklyWorkoutsDone)).weekDelta;
+    var cardioDelta = computeWeekDelta('weeklyCardioDone', num(w.weeklyCardioDone)).weekDelta;
+    var stepsDelta = computeWeekDelta('weeklyStepsTotal', num(w.weeklyStepsTotal)).weekDelta;
     return '' +
       '<div class="slide slide-recap-title">' +
         '<div class="deco-circle deco-circle--recap"></div>' +
@@ -1295,23 +1300,32 @@ details.goals-panel summary{
           '<div class="recap-headline">Week ' + state.week + '<br>&mdash; Complete</div>' +
           '<div class="recap-daterange">' + esc(w.dateRange) + '</div>' +
           '<div class="recap-stats-row">' +
-            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyWorkoutsDone) + '/' + num(g.weeklyWorkoutsGoal) + '</div><div class="stat-label">Workouts</div></div>' +
-            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyCardioDone) + '/' + num(g.weeklyCardioGoal) + '</div><div class="stat-label">Cardio</div></div>' +
-            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyStepsTotal).toLocaleString() + '</div><div class="stat-label">Total Steps</div></div>' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyWorkoutsDone) + '/' + num(g.weeklyWorkoutsGoal) + '</div><div class="stat-label">Workouts</div><div class="stat-delta">' + formatDelta(workoutsDelta, { goodDirection: 'up' }) + ' vs last wk</div></div>' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyCardioDone) + '/' + num(g.weeklyCardioGoal) + '</div><div class="stat-label">Cardio</div><div class="stat-delta">' + formatDelta(cardioDelta, { goodDirection: 'up' }) + ' vs last wk</div></div>' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyStepsTotal).toLocaleString() + '</div><div class="stat-label">Total Steps</div><div class="stat-delta">' + formatDelta(stepsDelta, { goodDirection: 'up' }) + ' vs last wk</div></div>' +
           '</div>' +
         '</div>' +
       '</div>';
   }
 
-  function formatMeasureDelta(delta){
-    if(delta == null) return '<span class="body-measure-delta-flat">&mdash;</span>';
+  function formatDelta(delta, opts){
+    opts = opts || {};
+    var suffix = opts.suffix || '';
+    var goodDirection = opts.goodDirection || 'down';
+    if(delta == null) return '<span class="delta-flat">&mdash;</span>';
     var rounded = Math.round(delta * 10) / 10;
-    var cls = rounded === 0 ? 'body-measure-delta-flat' : (rounded < 0 ? 'body-measure-delta-down' : 'body-measure-delta-up');
+    if(rounded === 0) return '<span class="delta-flat">0' + suffix + '</span>';
+    var isGood = goodDirection === 'down' ? rounded < 0 : rounded > 0;
+    var cls = isGood ? 'delta-good' : 'delta-bad';
     var sign = rounded > 0 ? '+' : '';
-    return '<span class="' + cls + '">' + sign + rounded + '&Prime;</span>';
+    return '<span class="' + cls + '">' + sign + rounded + suffix + '</span>';
   }
 
-  function computeMeasureDelta(field, currentValue){
+  function formatMeasureDelta(delta){
+    return formatDelta(delta, { suffix: '″', goodDirection: 'down' });
+  }
+
+  function computeWeekDelta(field, currentValue){
     var series = computeTrendData().filter(function(d){ return d.week < state.week; });
     if(!series.length) return { weekDelta: null, totalDelta: null };
     return {
@@ -1328,7 +1342,7 @@ details.goals-panel summary{
 
     var measureCards = MEASURE_FIELDS.map(function(m){
       var mCurrent = num(w[m.key]);
-      var delta = computeMeasureDelta(m.key, mCurrent);
+      var delta = computeWeekDelta(m.key, mCurrent);
       return '<div class="body-measure-card">' +
         '<div class="body-measure-label">' + esc(m.label) + '</div>' +
         '<div class="body-measure-value">' + mCurrent + '<span class="body-measure-unit">in</span></div>' +
@@ -1380,15 +1394,19 @@ details.goals-panel summary{
 
   function renderWeeklyStatsSlide(){
     var w = state.weekly, g = state.goals;
+    var stepsDelta = computeWeekDelta('weeklyStepsTotal', num(w.weeklyStepsTotal)).weekDelta;
+    var workoutsDelta = computeWeekDelta('weeklyWorkoutsDone', num(w.weeklyWorkoutsDone)).weekDelta;
+    var cardioDelta = computeWeekDelta('weeklyCardioDone', num(w.weeklyCardioDone)).weekDelta;
+    var waterDelta = computeWeekDelta('avgWaterL', num(w.avgWaterL)).weekDelta;
     return '' +
       '<div class="slide slide-weekly-stats">' +
         '<div class="pill">WEEKLY STATS</div>' +
         '<div class="slide-body">' +
           '<div class="stats-grid">' +
-            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyStepsTotal).toLocaleString() + '</div><div class="stat-label">Total Steps</div></div>' +
-            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyWorkoutsDone) + '/' + num(g.weeklyWorkoutsGoal) + '</div><div class="stat-label">Workouts</div></div>' +
-            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyCardioDone) + '/' + num(g.weeklyCardioGoal) + '</div><div class="stat-label">Cardio</div></div>' +
-            '<div class="stat-card"><div class="stat-value">' + num(w.avgWaterL) + 'L</div><div class="stat-label">Avg Daily Water</div></div>' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyStepsTotal).toLocaleString() + '</div><div class="stat-label">Total Steps</div><div class="stat-delta">' + formatDelta(stepsDelta, { goodDirection: 'up' }) + ' vs last wk</div></div>' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyWorkoutsDone) + '/' + num(g.weeklyWorkoutsGoal) + '</div><div class="stat-label">Workouts</div><div class="stat-delta">' + formatDelta(workoutsDelta, { goodDirection: 'up' }) + ' vs last wk</div></div>' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyCardioDone) + '/' + num(g.weeklyCardioGoal) + '</div><div class="stat-label">Cardio</div><div class="stat-delta">' + formatDelta(cardioDelta, { goodDirection: 'up' }) + ' vs last wk</div></div>' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.avgWaterL) + 'L</div><div class="stat-label">Avg Daily Water</div><div class="stat-delta">' + formatDelta(waterDelta, { suffix: 'L', goodDirection: 'up' }) + ' vs last wk</div></div>' +
           '</div>' +
         '</div>' +
       '</div>';
