@@ -11,31 +11,36 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root{
-  --text-dark:#312620;
-  --text-muted:#73665F;
-  --card-white:#FDFCF9;
-  --bg-cream:#FBF4EB;
-  --bg-coral-tint:#FFE0DA;
-  --bg-sage-tint:#D9EEDF;
-  --bg-lavender-tint:#EBE4FA;
-  --bg-peach-cream:#FCEFE5;
-  --bg-deep-coral:#FFDCD7;
-  --circle-coral:#FFDCD7;
-  --circle-sage:#D6F0DA;
-  --circle-recap:#FFE4DF;
-  --heading-coral:#3C2826;
-  --heading-sage:#223227;
-  --heading-lavender:#302A3B;
-  --bar-carbs:#CC8F5C;
-  --bar-protein:#CF7F79;
-  --bar-fat:#A693C9;
-  --bar-water:#389DB9;
-  --bar-sage-strong:#539B6E;
-  --badge-duration:#EB827B;
-  --track-alt:#E1DDD7;
+  /* Bold Athletic palette: near-black slide canvas (each with a faint hue
+     matching its old pastel family), lime signature accent, vibrant data
+     colors. Token names kept from the original pastel palette so every
+     usage site below picks up the new theme automatically. */
+  --text-dark:#F5F3EF;
+  --text-muted:#9A9DA3;
+  --card-white:#1B1F22;
+  --bg-cream:#151210;
+  --bg-coral-tint:#170D12;
+  --bg-sage-tint:#0E1613;
+  --bg-lavender-tint:#130F1A;
+  --bg-peach-cream:#170F0A;
+  --bg-deep-coral:#1A0D14;
+  --circle-coral:#FF3D8F;
+  --circle-sage:#D4FF3F;
+  --circle-recap:#FF9F1C;
+  --heading-coral:#FFFFFF;
+  --heading-sage:#FFFFFF;
+  --heading-lavender:#C9A6FF;
+  --bar-carbs:#FF9F1C;
+  --bar-protein:#FF3D8F;
+  --bar-fat:#9B5CFF;
+  --bar-water:#33D6C0;
+  --bar-sage-strong:#D4FF3F;
+  --badge-duration:#FF4D5E;
+  --track-alt:#2A2F34;
+  --accent-lime:#D4FF3F;
   --app-ink:#3D2F35;
   --app-ink-soft:#8C7982;
-  --app-accent:#B5606B;
+  --app-accent:#E5266F;
 }
 
 * { box-sizing: border-box; }
@@ -264,7 +269,8 @@ details.goals-panel summary{
   left:88px;
   padding:14px 28px;
   border-radius:999px;
-  background:var(--card-white);
+  background:var(--accent-lime);
+  color:#101214;
   font-weight:700;
   font-size:24px;
   letter-spacing:0.06em;
@@ -273,11 +279,10 @@ details.goals-panel summary{
 .deco-circle{
   position:absolute;
   border-radius:50%;
-  filter:blur(60px);
 }
-.deco-circle--coral{ width:440px;height:440px;top:-120px;right:-120px;background:var(--circle-coral); }
-.deco-circle--sage{ width:440px;height:440px;bottom:-140px;left:-140px;background:var(--circle-sage); }
-.deco-circle--recap{ width:480px;height:480px;top:-140px;right:-160px;background:var(--circle-recap); }
+.deco-circle--coral{ width:680px;height:680px;top:-260px;right:-260px;background:radial-gradient(circle, var(--circle-coral) 0%, rgba(255,61,143,0) 70%); opacity:0.55; }
+.deco-circle--sage{ width:680px;height:680px;bottom:-280px;left:-280px;background:radial-gradient(circle, var(--circle-sage) 0%, rgba(212,255,63,0) 70%); opacity:0.4; }
+.deco-circle--recap{ width:720px;height:720px;top:-280px;right:-300px;background:radial-gradient(circle, var(--circle-recap) 0%, rgba(255,159,28,0) 70%); opacity:0.5; }
 
 .slide-body{
   height:100%;
@@ -353,6 +358,7 @@ details.goals-panel summary{
   border-radius:16px;
   object-fit:cover;
   background:var(--track-alt);
+  border:1px solid rgba(245,243,239,0.12);
 }
 .fuel-cal{
   font-family:'Poppins',sans-serif;
@@ -383,6 +389,7 @@ details.goals-panel summary{
   position:absolute;
   left:88px; right:88px; bottom:88px;
   background:var(--card-white);
+  border:1px solid var(--track-alt);
   border-radius:24px;
   padding:26px 32px;
 }
@@ -413,6 +420,7 @@ details.goals-panel summary{
 .stat-card{
   flex:1;
   background:var(--card-white);
+  border:1px solid var(--track-alt);
   border-radius:24px;
   padding:30px 20px;
   text-align:center;
@@ -456,6 +464,7 @@ details.goals-panel summary{
 }
 .body-measure-card{
   background:var(--card-white);
+  border:1px solid var(--track-alt);
   border-radius:20px;
   padding:22px 14px;
   text-align:center;
@@ -490,6 +499,7 @@ details.goals-panel summary{
 .body-measure-delta-flat{ color:var(--text-muted); }
 .body-row{
   background:var(--card-white);
+  border:1px solid var(--track-alt);
   border-radius:20px;
   padding:24px 28px;
   display:flex;
@@ -514,6 +524,7 @@ details.goals-panel summary{
   height:760px;
   border-radius:32px;
   background:var(--track-alt);
+  border:1px solid rgba(245,243,239,0.12);
   position:relative;
   overflow:hidden;
 }
@@ -521,12 +532,12 @@ details.goals-panel summary{
 .ba-caption{
   position:absolute;
   left:20px; bottom:20px;
-  background:rgba(253,252,249,0.92);
+  background:var(--accent-lime);
   padding:10px 20px;
   border-radius:999px;
   font-weight:700;
   font-size:22px;
-  color:var(--text-dark);
+  color:#101214;
 }
 
 /* Wins & Challenges */
@@ -541,6 +552,7 @@ details.goals-panel summary{
 .wins-heading:not(:first-child){ margin-top:44px; }
 .wins-card{
   background:var(--card-white);
+  border:1px solid var(--track-alt);
   border-radius:24px;
   padding:32px;
   font-size:26px;
@@ -999,8 +1011,8 @@ details.goals-panel summary{
         '<div class="slide-body">' +
           '<div class="steps-ring-wrap">' +
             '<svg width="520" height="520" viewBox="0 0 520 520">' +
-              '<circle cx="260" cy="260" r="' + radius + '" stroke="#FDFCF9" stroke-width="36" fill="none"/>' +
-              '<circle cx="260" cy="260" r="' + radius + '" stroke="#539B6E" stroke-width="36" fill="none" ' +
+              '<circle cx="260" cy="260" r="' + radius + '" stroke="#2A2F34" stroke-width="36" fill="none"/>' +
+              '<circle cx="260" cy="260" r="' + radius + '" stroke="#D4FF3F" stroke-width="36" fill="none" ' +
                 'stroke-linecap="round" stroke-dasharray="' + dash.toFixed(2) + ' ' + circumference.toFixed(2) + '" ' +
                 'transform="rotate(-90 260 260)"/>' +
             '</svg>' +
@@ -1216,8 +1228,8 @@ details.goals-panel summary{
     var dots = points.map(function(p){ return '<circle cx="' + xPos(p.x).toFixed(1) + '" cy="' + yPos(p.y).toFixed(1) + '" r="4" fill="' + opts.color + '"/>'; }).join('');
     var xLabels = points.map(function(p){ return '<text x="' + xPos(p.x).toFixed(1) + '" y="' + (h - 8) + '" font-size="11" text-anchor="middle" fill="#8C7982">W' + p.x + '</text>'; }).join('');
     var goalLine = opts.goalY != null
-      ? '<line x1="' + padL + '" y1="' + yPos(opts.goalY).toFixed(1) + '" x2="' + (w - padR) + '" y2="' + yPos(opts.goalY).toFixed(1) + '" stroke="#B5606B" stroke-width="1.5" stroke-dasharray="4 4"/>' +
-        '<text x="' + (w - padR) + '" y="' + (yPos(opts.goalY) - 6).toFixed(1) + '" font-size="11" text-anchor="end" fill="#B5606B">Goal</text>'
+      ? '<line x1="' + padL + '" y1="' + yPos(opts.goalY).toFixed(1) + '" x2="' + (w - padR) + '" y2="' + yPos(opts.goalY).toFixed(1) + '" stroke="#E5266F" stroke-width="1.5" stroke-dasharray="4 4"/>' +
+        '<text x="' + (w - padR) + '" y="' + (yPos(opts.goalY) - 6).toFixed(1) + '" font-size="11" text-anchor="end" fill="#E5266F">Goal</text>'
       : '';
 
     return '<div class="trend-chart-title">' + esc(opts.label) + '</div>' +
