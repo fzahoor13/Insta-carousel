@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fitness Journey Carousel Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{
+  --text-dark:#312620;
+  --text-muted:#73665F;
+  --card-white:#FDFCF9;
+  --bg-cream:#FBF4EB;
+  --bg-coral-tint:#FFE0DA;
+  --bg-sage-tint:#D9EEDF;
+  --bg-lavender-tint:#EBE4FA;
+  --bg-peach-cream:#FCEFE5;
+  --bg-deep-coral:#FFDCD7;
+  --circle-coral:#FFDCD7;
+  --circle-sage:#D6F0DA;
+  --circle-recap:#FFE4DF;
+  --heading-coral:#3C2826;
+  --heading-sage:#223227;
+  --heading-lavender:#302A3B;
+  --bar-carbs:#CC8F5C;
+  --bar-protein:#CF7F79;
+  --bar-fat:#A693C9;
+  --bar-water:#389DB9;
+  --bar-sage-strong:#539B6E;
+  --badge-duration:#EB827B;
+  --track-alt:#E1DDD7;
+  --app-ink:#3D2F35;
+  --app-ink-soft:#8C7982;
+  --app-accent:#B5606B;
+}
+
+* { box-sizing: border-box; }
+
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  color:var(--app-ink);
+  background:#F4EFEC;
+}
+
+#app{
+  display:grid;
+  grid-template-columns:400px 1fr;
+  min-height:100vh;
+}
+@media (max-width: 900px){
+  #app{ grid-template-columns:1fr; }
+}
+
+/* ---------- App chrome ---------- */
+.panel{
+  padding:28px 24px 80px;
+  overflow-y:auto;
+}
+.controls{
+  background:#fff;
+  border-right:1px solid #E8E1DC;
+}
+h1{
+  font-size:20px;
+  margin:0 0 4px;
+}
+.app-sub{
+  font-size:13px;
+  color:var(--app-ink-soft);
+  margin:0 0 24px;
+}
+.field-row{
+  display:flex;
+  gap:12px;
+  margin-bottom:16px;
+}
+.field{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+label{
+  font-size:12px;
+  font-weight:600;
+  color:var(--app-ink-soft);
+  text-transform:uppercase;
+  letter-spacing:0.03em;
+}
+input[type=text],
+input[type=number],
+input[type=date],
+textarea{
+  font-family:inherit;
+  font-size:14px;
+  padding:9px 11px;
+  border:1px solid #DED5CE;
+  border-radius:8px;
+  background:#FBF9F7;
+  color:var(--app-ink);
+  width:100%;
+}
+textarea{ resize:vertical; min-height:64px; }
+input:focus, textarea:focus{
+  outline:2px solid var(--app-accent);
+  outline-offset:1px;
+}
+.tabs{
+  display:flex;
+  gap:6px;
+  margin-bottom:20px;
+  background:#F1EBE7;
+  padding:4px;
+  border-radius:10px;
+}
+.tab-btn{
+  flex:1;
+  border:none;
+  background:transparent;
+  padding:10px 6px;
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--app-ink-soft);
+  border-radius:8px;
+  cursor:pointer;
+}
+.tab-btn.active{
+  background:#fff;
+  color:var(--app-accent);
+  box-shadow:0 1px 3px rgba(0,0,0,0.12);
+}
+.section{
+  border-top:1px solid #EEE7E2;
+  padding-top:16px;
+  margin-top:16px;
+}
+.section h2{
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  color:var(--app-ink-soft);
+  margin:0 0 12px;
+}
+.hidden{ display:none !important; }
+.photo-field{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.photo-thumb-preview{
+  width:48px;height:48px;border-radius:8px;object-fit:cover;
+  background:#EEE7E2;border:1px solid #DED5CE;
+}
+.btn{
+  font-family:inherit;
+  font-size:13.5px;
+  font-weight:700;
+  border:none;
+  border-radius:8px;
+  padding:10px 16px;
+  cursor:pointer;
+}
+.btn-primary{ background:var(--app-accent); color:#fff; }
+.btn-secondary{ background:#EEE7E2; color:var(--app-ink); }
+.btn-small{ font-size:12px; padding:6px 10px; }
+.btn:disabled{ opacity:0.5; cursor:not-allowed; }
+.btn-row{ display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; }
+.status-msg{
+  margin-top:10px;
+  font-size:12.5px;
+  color:var(--app-accent);
+  min-height:16px;
+  white-space:pre-line;
+}
+details.goals-panel{
+  border:1px solid #EEE7E2;
+  border-radius:10px;
+  padding:12px 14px;
+  margin-top:20px;
+  background:#FBF9F7;
+}
+details.goals-panel summary{
+  cursor:pointer;
+  font-size:13px;
+  font-weight:700;
+  color:var(--app-ink);
+}
+.goals-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:14px;
+}
+
+/* ---------- Preview panel ---------- */
+.preview-panel{ background:#F4EFEC; }
+.preview-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:20px;
+}
+.preview-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:28px;
+}
+.slide-card{
+  width:340px;
+}
+.slide-card-label{
+  font-size:13px;
+  font-weight:700;
+  margin-bottom:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:8px;
+}
+.slide-card-label .skip-note{
+  font-weight:500;
+  font-style:italic;
+  color:var(--app-ink-soft);
+  font-size:11.5px;
+}
+.slide-preview-wrap{
+  width:340px;
+  height:340px;
+  overflow:hidden;
+  border-radius:10px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.14);
+  background:#fff;
+}
+.slide-preview-inner{
+  width:1080px;
+  height:1080px;
+  transform:scale(0.31481481);
+  transform-origin:top left;
+}
+.slide-card .btn{ margin-top:8px; }
+
+/* ---------- Slide (1080x1080) base ---------- */
+.slide{
+  width:1080px;
+  height:1080px;
+  box-sizing:border-box;
+  padding:88px;
+  position:relative;
+  overflow:hidden;
+  font-family:'DM Sans',sans-serif;
+  color:var(--text-dark);
+}
+.pill{
+  position:absolute;
+  top:88px;
+  left:88px;
+  padding:14px 28px;
+  border-radius:999px;
+  background:var(--card-white);
+  font-weight:700;
+  font-size:24px;
+  letter-spacing:0.06em;
+  font-family:'DM Sans',sans-serif;
+}
+.deco-circle{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(60px);
+}
+.deco-circle--coral{ width:440px;height:440px;top:-120px;right:-120px;background:var(--circle-coral); }
+.deco-circle--sage{ width:440px;height:440px;bottom:-140px;left:-140px;background:var(--circle-sage); }
+.deco-circle--recap{ width:480px;height:480px;top:-140px;right:-160px;background:var(--circle-recap); }
+
+.slide-body{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+/* Title */
+.slide-title{ background:var(--bg-cream); }
+.slide-title .slide-body{ justify-content:center; }
+.slide-title__day{
+  font-family:'Poppins',sans-serif;
+  font-weight:800;
+  font-size:180px;
+  color:var(--heading-coral);
+  line-height:1;
+  margin:0 0 24px;
+}
+.slide-title__subtitle{
+  font-style:italic;
+  font-size:32px;
+  color:var(--text-dark);
+  margin:0 0 16px;
+  font-weight:500;
+}
+.slide-title__date{
+  font-size:24px;
+  color:var(--text-muted);
+}
+
+/* Steps */
+.slide-steps{ background:var(--bg-sage-tint); }
+.slide-steps .slide-body{ align-items:center; justify-content:center; }
+.steps-ring-wrap{ position:relative; width:520px; height:520px; }
+.steps-ring-center{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+.steps-number{
+  font-family:'Poppins',sans-serif;
+  font-weight:800;
+  font-size:96px;
+  color:var(--heading-sage);
+  line-height:1;
+}
+.steps-goal{
+  font-size:28px;
+  font-weight:600;
+  color:var(--text-muted);
+  margin-top:14px;
+}
+.steps-footer{
+  position:absolute;
+  left:0; right:0; bottom:0;
+  text-align:center;
+  font-style:italic;
+  font-size:24px;
+  color:var(--text-muted);
+}
+
+/* Fuel */
+.slide-fuel{ background:var(--bg-peach-cream); }
+.fuel-thumb{
+  position:absolute;
+  top:0; right:0;
+  width:96px; height:96px;
+  border-radius:16px;
+  object-fit:cover;
+  background:var(--track-alt);
+}
+.fuel-cal{
+  font-family:'Poppins',sans-serif;
+  font-weight:800;
+  font-size:88px;
+  color:var(--heading-coral);
+  margin-top:120px;
+  line-height:1;
+}
+.fuel-cal-label{
+  font-size:24px;
+  color:var(--text-muted);
+  margin:10px 0 48px;
+}
+.fuel-bars{ display:flex; flex-direction:column; gap:22px; }
+.fuel-bar-row{ display:flex; align-items:center; gap:16px; }
+.fuel-bar-row .bar-name{ width:110px; font-size:22px; font-weight:600; }
+.fuel-bar-row .bar-val{ width:70px; text-align:right; font-size:20px; color:var(--text-muted); }
+.bar-track{
+  flex:1;
+  height:20px;
+  border-radius:999px;
+  background:var(--track-alt);
+  overflow:hidden;
+}
+.bar-fill{ height:100%; }
+.fuel-water-card{
+  position:absolute;
+  left:88px; right:88px; bottom:88px;
+  background:var(--card-white);
+  border-radius:24px;
+  padding:26px 32px;
+}
+.fuel-water-card .bar-track{ height:18px; margin-bottom:14px; }
+.fuel-water-card .water-label{ font-size:22px; font-weight:600; }
+
+/* Week Recap Title */
+.slide-recap-title{ background:var(--bg-deep-coral); }
+.recap-headline{
+  font-family:'Poppins',sans-serif;
+  font-weight:800;
+  font-size:100px;
+  color:var(--heading-coral);
+  line-height:1.05;
+  margin-top:150px;
+}
+.recap-daterange{
+  font-size:28px;
+  color:var(--text-muted);
+  margin-top:20px;
+}
+.recap-stats-row{
+  display:flex;
+  gap:24px;
+  position:absolute;
+  left:0; right:0; bottom:0;
+}
+.stat-card{
+  flex:1;
+  background:var(--card-white);
+  border-radius:24px;
+  padding:30px 20px;
+  text-align:center;
+}
+.stat-value{
+  font-family:'Poppins',sans-serif;
+  font-weight:800;
+  font-size:44px;
+  color:var(--text-dark);
+  line-height:1;
+}
+.stat-label{
+  font-size:19px;
+  color:var(--text-muted);
+  margin-top:10px;
+}
+
+/* Body Check */
+.slide-body-check{ background:var(--bg-sage-tint); }
+.body-weight{
+  font-family:'Poppins',sans-serif;
+  font-weight:800;
+  font-size:120px;
+  color:var(--heading-sage);
+  line-height:1;
+  margin-top:60px;
+}
+.body-weight-unit{ font-size:48px; margin-left:8px; }
+.body-weight-goal{
+  font-size:28px;
+  color:var(--text-muted);
+  margin:16px 0 36px;
+}
+.body-bar-track{ height:24px; }
+.body-rows{ margin-top:56px; display:flex; flex-direction:column; gap:20px; }
+.body-row{
+  background:var(--card-white);
+  border-radius:20px;
+  padding:24px 28px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:24px;
+}
+.body-row .body-row-label{ color:var(--text-muted); font-weight:600; }
+.body-row .body-row-value{ font-weight:700; }
+
+/* Before/After */
+.slide-before-after{ background:var(--bg-cream); }
+.ba-frames{
+  display:flex;
+  gap:32px;
+  height:100%;
+  align-items:center;
+  margin-top:60px;
+}
+.ba-frame{
+  flex:1;
+  height:760px;
+  border-radius:32px;
+  background:var(--track-alt);
+  position:relative;
+  overflow:hidden;
+}
+.ba-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+.ba-caption{
+  position:absolute;
+  left:20px; bottom:20px;
+  background:rgba(253,252,249,0.92);
+  padding:10px 20px;
+  border-radius:999px;
+  font-weight:700;
+  font-size:22px;
+  color:var(--text-dark);
+}
+
+/* Wins & Challenges */
+.slide-wins{ background:var(--bg-lavender-tint); }
+.wins-heading{
+  font-family:'Poppins',sans-serif;
+  font-weight:700;
+  font-size:36px;
+  color:var(--heading-lavender);
+  margin:0 0 18px;
+}
+.wins-heading:not(:first-child){ margin-top:44px; }
+.wins-card{
+  background:var(--card-white);
+  border-radius:24px;
+  padding:32px;
+  font-size:26px;
+  line-height:1.5;
+  color:var(--text-dark);
+  white-space:pre-wrap;
+}
+
+/* Weekly Stats */
+.slide-weekly-stats{ background:var(--bg-coral-tint); }
+.stats-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+  margin-top:130px;
+}
+.stats-grid .stat-card{ padding:44px 20px; }
+.stats-grid .stat-value{ font-size:52px; }
+.stats-grid .stat-label{ font-size:22px; }
+
+#exportStage{
+  position:fixed;
+  top:0;
+  left:-99999px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="panel controls">
+    <h1>Fitness Journey Carousel Generator</h1>
+    <p class="app-sub">Instagram data-slide export for workout &amp; recap posts</p>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="weekInput">Week #</label>
+        <input type="number" id="weekInput" min="1" value="1">
+      </div>
+      <div class="field" id="dayFieldWrap">
+        <label for="dayInput">Day #</label>
+        <input type="number" id="dayInput" min="1" max="7" value="1">
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-mode="daily">Daily Post</button>
+      <button class="tab-btn" data-mode="rest">Rest Day Log</button>
+      <button class="tab-btn" data-mode="recap">Weekly Recap</button>
+    </div>
+
+    <!-- Title section (Daily Post only) -->
+    <div class="section" id="section-title">
+      <h2>Title</h2>
+      <div class="field" style="margin-bottom:12px;">
+        <label for="subtitleInput">Subtitle</label>
+        <input type="text" id="subtitleInput" placeholder="e.g. Push day, let's go">
+      </div>
+      <div class="field">
+        <label for="dateInput">Date</label>
+        <input type="text" id="dateInput" placeholder="e.g. Aug 10, 2026">
+      </div>
+    </div>
+
+    <!-- Steps section (Daily Post + Rest Day) -->
+    <div class="section" id="section-steps">
+      <h2>Steps</h2>
+      <div class="field" style="margin-bottom:12px;">
+        <label for="stepsTodayInput">Steps Today</label>
+        <input type="number" id="stepsTodayInput" min="0" value="0">
+      </div>
+      <div class="field">
+        <label for="stepsNoteInput">Footer Note</label>
+        <input type="text" id="stepsNoteInput" placeholder="e.g. New PR this week!">
+      </div>
+    </div>
+
+    <!-- Fuel section (Daily Post + Rest Day) -->
+    <div class="section" id="section-fuel">
+      <h2>Fuel</h2>
+      <div class="field" style="margin-bottom:12px;">
+        <label for="caloriesInput">Calories</label>
+        <input type="number" id="caloriesInput" min="0" value="0">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="carbsInput">Carbs (g)</label>
+          <input type="number" id="carbsInput" min="0" value="0">
+        </div>
+        <div class="field">
+          <label for="proteinInput">Protein (g)</label>
+          <input type="number" id="proteinInput" min="0" value="0">
+        </div>
+        <div class="field">
+          <label for="fatInput">Fat (g)</label>
+          <input type="number" id="fatInput" min="0" value="0">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:12px;">
+        <label for="waterInput">Water (L)</label>
+        <input type="number" id="waterInput" min="0" step="0.1" value="0">
+      </div>
+      <div class="field">
+        <label>Meal Photo</label>
+        <div class="photo-field">
+          <img class="photo-thumb-preview" id="mealPhotoPreview" style="display:none;">
+          <input type="file" accept="image/*" id="mealPhotoInput">
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Recap section -->
+    <div class="section hidden" id="section-recap">
+      <h2>Week Recap Title</h2>
+      <div class="field" style="margin-bottom:12px;">
+        <label for="dateRangeInput">Date Range</label>
+        <input type="text" id="dateRangeInput" placeholder="e.g. Aug 3 - Aug 9">
+      </div>
+      <div class="btn-row" style="margin-bottom:8px;">
+        <button class="btn btn-secondary btn-small" id="autofillBtn">Autofill from Week's Logs</button>
+      </div>
+
+      <h2 style="margin-top:20px;">Weekly Stats</h2>
+      <div class="field-row">
+        <div class="field">
+          <label for="weeklyStepsInput">Total Steps</label>
+          <input type="number" id="weeklyStepsInput" min="0" value="0">
+        </div>
+        <div class="field">
+          <label for="weeklyWorkoutsInput">Workouts Done</label>
+          <input type="number" id="weeklyWorkoutsInput" min="0" value="0">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="weeklyCardioInput">Cardio Done</label>
+          <input type="number" id="weeklyCardioInput" min="0" value="0">
+        </div>
+        <div class="field">
+          <label for="avgWaterInput">Avg Daily Water (L)</label>
+          <input type="number" id="avgWaterInput" min="0" step="0.1" value="0">
+        </div>
+      </div>
+
+      <h2 style="margin-top:20px;">Body Check</h2>
+      <div class="field" style="margin-bottom:12px;">
+        <label for="weightCurrentInput">Current Weight (kg)</label>
+        <input type="number" id="weightCurrentInput" min="0" step="0.1" value="0">
+      </div>
+      <div class="field" style="margin-bottom:12px;">
+        <label for="waistInput">Waist Measurement</label>
+        <input type="text" id="waistInput" placeholder="e.g. 78 cm">
+      </div>
+      <div class="field">
+        <label for="energyInput">Energy This Week</label>
+        <input type="text" id="energyInput" placeholder="e.g. Felt strong all week">
+      </div>
+
+      <h2 style="margin-top:20px;">Before / After</h2>
+      <div class="field-row">
+        <div class="field">
+          <label>Before Photo</label>
+          <div class="photo-field">
+            <img class="photo-thumb-preview" id="beforePhotoPreview" style="display:none;">
+            <input type="file" accept="image/*" id="beforePhotoInput">
+          </div>
+        </div>
+        <div class="field">
+          <label>After Photo</label>
+          <div class="photo-field">
+            <img class="photo-thumb-preview" id="afterPhotoPreview" style="display:none;">
+            <input type="file" accept="image/*" id="afterPhotoInput">
+          </div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="beforeLabelInput">Before Caption</label>
+          <input type="text" id="beforeLabelInput" value="Day 1">
+        </div>
+        <div class="field">
+          <label for="afterLabelInput">After Caption</label>
+          <input type="text" id="afterLabelInput" value="Day 3">
+        </div>
+      </div>
+
+      <h2 style="margin-top:20px;">Wins &amp; Challenges</h2>
+      <div class="field" style="margin-bottom:12px;">
+        <label for="winsInput">Wins</label>
+        <textarea id="winsInput" placeholder="What went well this week?"></textarea>
+      </div>
+      <div class="field">
+        <label for="challengesInput">Challenges</label>
+        <textarea id="challengesInput" placeholder="What was hard this week?"></textarea>
+      </div>
+    </div>
+
+    <details class="goals-panel">
+      <summary>Goals Settings</summary>
+      <div class="goals-grid">
+        <div class="field">
+          <label for="goalStepsInput">Steps Goal</label>
+          <input type="number" id="goalStepsInput" min="0">
+        </div>
+        <div class="field">
+          <label for="goalCarbsInput">Carbs Goal (g)</label>
+          <input type="number" id="goalCarbsInput" min="0">
+        </div>
+        <div class="field">
+          <label for="goalProteinInput">Protein Goal (g)</label>
+          <input type="number" id="goalProteinInput" min="0">
+        </div>
+        <div class="field">
+          <label for="goalFatInput">Fat Goal (g)</label>
+          <input type="number" id="goalFatInput" min="0">
+        </div>
+        <div class="field">
+          <label for="goalWaterInput">Water Goal (L)</label>
+          <input type="number" id="goalWaterInput" min="0" step="0.1">
+        </div>
+        <div class="field">
+          <label for="goalWeightStartInput">Weight Start (kg)</label>
+          <input type="number" id="goalWeightStartInput" min="0" step="0.1">
+        </div>
+        <div class="field">
+          <label for="goalWeightGoalInput">Weight Goal (kg)</label>
+          <input type="number" id="goalWeightGoalInput" min="0" step="0.1">
+        </div>
+        <div class="field">
+          <label for="goalWorkoutsInput">Weekly Workouts Goal</label>
+          <input type="number" id="goalWorkoutsInput" min="0">
+        </div>
+        <div class="field">
+          <label for="goalCardioInput">Weekly Cardio Goal</label>
+          <input type="number" id="goalCardioInput" min="0">
+        </div>
+      </div>
+    </details>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="saveBtn">Save Entry</button>
+    </div>
+    <div class="status-msg" id="saveStatus"></div>
+  </div>
+
+  <div class="panel preview-panel">
+    <div class="preview-header">
+      <strong id="previewTitle">Daily Post Preview</strong>
+      <button class="btn btn-primary" id="downloadAllBtn">Download All (ZIP)</button>
+    </div>
+    <div class="status-msg" id="exportStatus"></div>
+    <div class="preview-grid" id="previewGrid"></div>
+  </div>
+</div>
+
+<div id="exportStage"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  var STORAGE_GOALS_KEY = 'carousel:goals';
+  function dayKey(week, day){ return 'carousel:week' + week + ':day' + day; }
+  function recapKey(week){ return 'carousel:week' + week + ':recap'; }
+
+  var DEFAULT_GOALS = {
+    stepsGoal: 8000, carbsGoal: 120, proteinGoal: 120, fatGoal: 45, waterGoal: 3,
+    weightStart: 60, weightGoal: 52, weeklyWorkoutsGoal: 3, weeklyCardioGoal: 2
+  };
+
+  function blankDaily(){
+    return { subtitle:'', date:'', stepsToday:0, stepsNote:'', caloriesToday:0, carbsG:0, proteinG:0, fatG:0, waterL:0 };
+  }
+  function blankWeekly(){
+    return {
+      dateRange:'', weeklyStepsTotal:0, weeklyWorkoutsDone:0, weeklyCardioDone:0, avgWaterL:0,
+      weightCurrent:0, waist:'', energyWeek:'', winsText:'', challengesText:'',
+      beforeLabel:'Day 1', afterLabel:'Day 3'
+    };
+  }
+
+  var state = {
+    week: 1,
+    day: 1,
+    mode: 'daily',
+    daily: blankDaily(),
+    weekly: blankWeekly(),
+    goals: Object.assign({}, DEFAULT_GOALS),
+    photos: { meal:null, before:null, after:null }
+  };
+
+  var SLIDE_PHOTO_REQUIREMENTS = { beforeAfter: ['before','after'] };
+
+  /* ---------------- persistence ---------------- */
+
+  function loadGoals(){
+    try{
+      var raw = localStorage.getItem(STORAGE_GOALS_KEY);
+      if(raw){ state.goals = Object.assign({}, DEFAULT_GOALS, JSON.parse(raw)); }
+    }catch(e){}
+  }
+  function saveGoals(){
+    localStorage.setItem(STORAGE_GOALS_KEY, JSON.stringify(state.goals));
+  }
+
+  function loadEntryForCurrentSelection(){
+    if(state.mode === 'recap'){
+      var raw = localStorage.getItem(recapKey(state.week));
+      state.weekly = raw ? Object.assign(blankWeekly(), JSON.parse(raw)) : blankWeekly();
+      state.photos.before = null;
+      state.photos.after = null;
+    } else {
+      var raw2 = localStorage.getItem(dayKey(state.week, state.day));
+      if(raw2){
+        var payload = JSON.parse(raw2);
+        state.mode = payload.mode === 'rest' ? 'rest' : 'daily';
+        delete payload.mode;
+        state.daily = Object.assign(blankDaily(), payload);
+      } else {
+        state.daily = blankDaily();
+      }
+      state.photos.meal = null;
+    }
+  }
+
+  function saveCurrentEntry(){
+    if(state.mode === 'recap'){
+      localStorage.setItem(recapKey(state.week), JSON.stringify(state.weekly));
+      showStatus('saveStatus', 'Saved Week ' + state.week + ' Recap.');
+    } else {
+      var payload = Object.assign({ mode: state.mode }, state.daily);
+      localStorage.setItem(dayKey(state.week, state.day), JSON.stringify(payload));
+      showStatus('saveStatus', 'Saved Week ' + state.week + ' Day ' + state.day + ' (' + (state.mode === 'rest' ? 'Rest Day' : 'Daily Post') + ').');
+    }
+  }
+
+  function autofillFromWeek(){
+    var totalSteps = 0, totalWater = 0, loggedCount = 0, workoutsDone = 0;
+    for(var d = 1; d <= 7; d++){
+      var raw = localStorage.getItem(dayKey(state.week, d));
+      if(!raw) continue;
+      var entry = JSON.parse(raw);
+      totalSteps += Number(entry.stepsToday) || 0;
+      totalWater += Number(entry.waterL) || 0;
+      loggedCount++;
+      if(entry.mode !== 'rest') workoutsDone++;
+    }
+    state.weekly.weeklyStepsTotal = totalSteps;
+    state.weekly.weeklyWorkoutsDone = workoutsDone;
+    state.weekly.avgWaterL = loggedCount ? Math.round((totalWater / loggedCount) * 10) / 10 : 0;
+    populateFormFromState();
+    renderPreview();
+    showStatus('saveStatus', 'Autofilled from ' + loggedCount + ' logged day(s) in Week ' + state.week + '.');
+  }
+
+  function showStatus(elId, msg){
+    var el = document.getElementById(elId);
+    el.textContent = msg;
+  }
+
+  /* ---------------- helpers ---------------- */
+
+  function esc(str){
+    return String(str == null ? '' : str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function escMultiline(str){
+    return esc(str).replace(/\n/g,'<br>');
+  }
+  function num(v){ return Number(v) || 0; }
+  function pct(consumed, goal){
+    if(!goal) return 0;
+    return Math.max(0, Math.min(100, (consumed / goal) * 100));
+  }
+  function clamp01(v){ return Math.max(0, Math.min(1, v)); }
+
+  /* ---------------- slide renderers ---------------- */
+
+  function renderTitleSlide(){
+    var d = state.daily;
+    return '' +
+      '<div class="slide slide-title">' +
+        '<div class="deco-circle deco-circle--coral"></div>' +
+        '<div class="deco-circle deco-circle--sage"></div>' +
+        '<div class="pill">WEEK ' + state.week + '</div>' +
+        '<div class="slide-body">' +
+          '<div class="slide-title__day">DAY ' + state.day + '</div>' +
+          '<div class="slide-title__subtitle">' + esc(d.subtitle) + '</div>' +
+          '<div class="slide-title__date">' + esc(d.date) + '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderStepsSlide(){
+    var d = state.daily, g = state.goals;
+    var stepsToday = num(d.stepsToday), stepsGoal = num(g.stepsGoal) || 1;
+    var radius = 220, circumference = 2 * Math.PI * radius;
+    var fraction = clamp01(stepsToday / stepsGoal);
+    var dash = fraction * circumference;
+    return '' +
+      '<div class="slide slide-steps">' +
+        '<div class="pill">STEPS</div>' +
+        '<div class="slide-body">' +
+          '<div class="steps-ring-wrap">' +
+            '<svg width="520" height="520" viewBox="0 0 520 520">' +
+              '<circle cx="260" cy="260" r="' + radius + '" stroke="#FDFCF9" stroke-width="36" fill="none"/>' +
+              '<circle cx="260" cy="260" r="' + radius + '" stroke="#539B6E" stroke-width="36" fill="none" ' +
+                'stroke-linecap="round" stroke-dasharray="' + dash.toFixed(2) + ' ' + circumference.toFixed(2) + '" ' +
+                'transform="rotate(-90 260 260)"/>' +
+            '</svg>' +
+            '<div class="steps-ring-center">' +
+              '<div class="steps-number">' + stepsToday.toLocaleString() + '</div>' +
+              '<div class="steps-goal">of ' + num(g.stepsGoal).toLocaleString() + ' goal</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="steps-footer">' + esc(d.stepsNote) + '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderFuelSlide(){
+    var d = state.daily, g = state.goals, p = state.photos;
+    var carbsPct = pct(num(d.carbsG), num(g.carbsGoal));
+    var proteinPct = pct(num(d.proteinG), num(g.proteinGoal));
+    var fatPct = pct(num(d.fatG), num(g.fatGoal));
+    var waterPct = pct(num(d.waterL), num(g.waterGoal));
+    var thumb = p.meal
+      ? '<img class="fuel-thumb" src="' + p.meal + '">'
+      : '<div class="fuel-thumb"></div>';
+    return '' +
+      '<div class="slide slide-fuel">' +
+        '<div class="pill">FUEL</div>' +
+        thumb +
+        '<div class="slide-body">' +
+          '<div class="fuel-cal">' + num(d.caloriesToday).toLocaleString() + '</div>' +
+          '<div class="fuel-cal-label">kcal today</div>' +
+          '<div class="fuel-bars">' +
+            '<div class="fuel-bar-row"><span class="bar-name">Carbs</span><div class="bar-track"><div class="bar-fill" style="width:' + carbsPct + '%;background:var(--bar-carbs)"></div></div><span class="bar-val">' + num(d.carbsG) + 'g</span></div>' +
+            '<div class="fuel-bar-row"><span class="bar-name">Protein</span><div class="bar-track"><div class="bar-fill" style="width:' + proteinPct + '%;background:var(--bar-protein)"></div></div><span class="bar-val">' + num(d.proteinG) + 'g</span></div>' +
+            '<div class="fuel-bar-row"><span class="bar-name">Fat</span><div class="bar-track"><div class="bar-fill" style="width:' + fatPct + '%;background:var(--bar-fat)"></div></div><span class="bar-val">' + num(d.fatG) + 'g</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="fuel-water-card">' +
+          '<div class="bar-track"><div class="bar-fill" style="width:' + waterPct + '%;background:var(--bar-water)"></div></div>' +
+          '<div class="water-label">' + num(d.waterL) + ' / ' + num(g.waterGoal) + ' L</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderWeekRecapTitleSlide(){
+    var w = state.weekly, g = state.goals;
+    return '' +
+      '<div class="slide slide-recap-title">' +
+        '<div class="deco-circle deco-circle--recap"></div>' +
+        '<div class="pill">WEEK ' + state.week + ' RECAP</div>' +
+        '<div class="slide-body">' +
+          '<div class="recap-headline">Week ' + state.week + '<br>&mdash; Complete</div>' +
+          '<div class="recap-daterange">' + esc(w.dateRange) + '</div>' +
+          '<div class="recap-stats-row">' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyWorkoutsDone) + '/' + num(g.weeklyWorkoutsGoal) + '</div><div class="stat-label">Workouts</div></div>' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyCardioDone) + '/' + num(g.weeklyCardioGoal) + '</div><div class="stat-label">Cardio</div></div>' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyStepsTotal).toLocaleString() + '</div><div class="stat-label">Total Steps</div></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderBodyCheckSlide(){
+    var w = state.weekly, g = state.goals;
+    var start = num(g.weightStart), goal = num(g.weightGoal), current = num(w.weightCurrent);
+    var denom = (start - goal);
+    var fraction = denom !== 0 ? clamp01((start - current) / denom) : 0;
+    return '' +
+      '<div class="slide slide-body-check">' +
+        '<div class="pill">BODY CHECK</div>' +
+        '<div class="slide-body">' +
+          '<div class="body-weight">' + current + '<span class="body-weight-unit">kg</span></div>' +
+          '<div class="body-weight-goal">&rarr; ' + goal + ' kg goal</div>' +
+          '<div class="bar-track body-bar-track"><div class="bar-fill" style="width:' + (fraction * 100) + '%;background:var(--bar-sage-strong)"></div></div>' +
+          '<div class="body-rows">' +
+            '<div class="body-row"><span class="body-row-label">Waist</span><span class="body-row-value">' + esc(w.waist) + '</span></div>' +
+            '<div class="body-row"><span class="body-row-label">Energy this week</span><span class="body-row-value">' + esc(w.energyWeek) + '</span></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderBeforeAfterSlide(){
+    var w = state.weekly, p = state.photos;
+    return '' +
+      '<div class="slide slide-before-after">' +
+        '<div class="pill">BEFORE / AFTER</div>' +
+        '<div class="ba-frames">' +
+          '<div class="ba-frame">' + (p.before ? '<img src="' + p.before + '">' : '') + '<div class="ba-caption">' + esc(w.beforeLabel) + '</div></div>' +
+          '<div class="ba-frame">' + (p.after ? '<img src="' + p.after + '">' : '') + '<div class="ba-caption">' + esc(w.afterLabel) + '</div></div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderWinsChallengesSlide(){
+    var w = state.weekly;
+    return '' +
+      '<div class="slide slide-wins">' +
+        '<div class="pill">WINS &amp; CHALLENGES</div>' +
+        '<div class="slide-body" style="justify-content:center;">' +
+          '<div class="wins-heading">Wins</div>' +
+          '<div class="wins-card">' + escMultiline(w.winsText) + '</div>' +
+          '<div class="wins-heading">Challenges</div>' +
+          '<div class="wins-card">' + escMultiline(w.challengesText) + '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderWeeklyStatsSlide(){
+    var w = state.weekly, g = state.goals;
+    return '' +
+      '<div class="slide slide-weekly-stats">' +
+        '<div class="pill">WEEKLY STATS</div>' +
+        '<div class="slide-body">' +
+          '<div class="stats-grid">' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyStepsTotal).toLocaleString() + '</div><div class="stat-label">Total Steps</div></div>' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyWorkoutsDone) + '/' + num(g.weeklyWorkoutsGoal) + '</div><div class="stat-label">Workouts</div></div>' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.weeklyCardioDone) + '/' + num(g.weeklyCardioGoal) + '</div><div class="stat-label">Cardio</div></div>' +
+            '<div class="stat-card"><div class="stat-value">' + num(w.avgWaterL) + 'L</div><div class="stat-label">Avg Daily Water</div></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function currentSlideList(){
+    if(state.mode === 'daily'){
+      return [
+        { key:'title', label:'1. Title', filenameSuffix:'01-title', render: renderTitleSlide },
+        { key:'steps', label:'2. Steps', filenameSuffix:'02-steps', render: renderStepsSlide },
+        { key:'fuel', label:'3. Fuel', filenameSuffix:'03-fuel', render: renderFuelSlide }
+      ];
+    }
+    if(state.mode === 'recap'){
+      return [
+        { key:'recapTitle', label:'1. Week Recap Title', filenameSuffix:'01-recap-title', render: renderWeekRecapTitleSlide },
+        { key:'bodyCheck', label:'2. Body Check', filenameSuffix:'02-body-check', render: renderBodyCheckSlide },
+        { key:'beforeAfter', label:'3. Before / After', filenameSuffix:'03-before-after', render: renderBeforeAfterSlide },
+        { key:'wins', label:'4. Wins & Challenges', filenameSuffix:'04-wins-challenges', render: renderWinsChallengesSlide },
+        { key:'weeklyStats', label:'5. Weekly Stats', filenameSuffix:'05-weekly-stats', render: renderWeeklyStatsSlide }
+      ];
+    }
+    return [];
+  }
+
+  function slideIsSkippedOnExport(slideKey){
+    var req = SLIDE_PHOTO_REQUIREMENTS[slideKey];
+    if(!req) return false;
+    return req.every(function(k){ return !state.photos[k]; });
+  }
+
+  /* ---------------- preview rendering ---------------- */
+
+  function renderPreview(){
+    var grid = document.getElementById('previewGrid');
+    var previewTitle = document.getElementById('previewTitle');
+    var downloadAllBtn = document.getElementById('downloadAllBtn');
+    grid.innerHTML = '';
+
+    if(state.mode === 'rest'){
+      previewTitle.textContent = 'Rest Day Log — nothing to export';
+      downloadAllBtn.classList.add('hidden');
+      return;
+    }
+    downloadAllBtn.classList.remove('hidden');
+    previewTitle.textContent = state.mode === 'daily' ? 'Daily Post Preview' : 'Weekly Recap Preview';
+
+    var slides = currentSlideList();
+    slides.forEach(function(slide){
+      var card = document.createElement('div');
+      card.className = 'slide-card';
+
+      var labelWrap = document.createElement('div');
+      labelWrap.className = 'slide-card-label';
+      var labelText = document.createElement('span');
+      labelText.textContent = slide.label;
+      labelWrap.appendChild(labelText);
+      if(slide.key === 'beforeAfter' && slideIsSkippedOnExport('beforeAfter')){
+        var skipNote = document.createElement('span');
+        skipNote.className = 'skip-note';
+        skipNote.textContent = '(no photo — skipped on export)';
+        labelWrap.appendChild(skipNote);
+      }
+      card.appendChild(labelWrap);
+
+      var wrap = document.createElement('div');
+      wrap.className = 'slide-preview-wrap';
+      var inner = document.createElement('div');
+      inner.className = 'slide-preview-inner';
+      inner.innerHTML = slide.render();
+      wrap.appendChild(inner);
+      card.appendChild(wrap);
+
+      var dlBtn = document.createElement('button');
+      dlBtn.className = 'btn btn-secondary btn-small';
+      dlBtn.textContent = 'Download PNG';
+      dlBtn.addEventListener('click', function(){ downloadSingleSlide(slide); });
+      card.appendChild(dlBtn);
+
+      grid.appendChild(card);
+    });
+  }
+
+  /* ---------------- export ---------------- */
+
+  function withTimeout(promise, ms, message){
+    return new Promise(function(resolve, reject){
+      var timer = setTimeout(function(){ reject(new Error(message)); }, ms);
+      promise.then(function(v){ clearTimeout(timer); resolve(v); },
+                    function(e){ clearTimeout(timer); reject(e); });
+    });
+  }
+
+  function captureSlideCanvas(html){
+    var stage = document.getElementById('exportStage');
+    stage.innerHTML = html;
+    var node = stage.firstElementChild;
+    var work = document.fonts.ready.then(function(){
+      return html2canvas(node, { scale: 1, width: 1080, height: 1080, backgroundColor: null });
+    });
+    return withTimeout(work, 20000, 'Rendering timed out — check your connection and try again.')
+      .then(function(canvas){
+        stage.innerHTML = '';
+        return canvas;
+      });
+  }
+
+  function canvasToBlob(canvas){
+    return new Promise(function(resolve){
+      canvas.toBlob(function(blob){ resolve(blob); }, 'image/png');
+    });
+  }
+
+  function triggerDownload(blob, filename){
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+  }
+
+  function baseFilenamePrefix(){
+    return state.mode === 'recap'
+      ? 'week' + state.week + '-recap'
+      : 'week' + state.week + '-day' + state.day;
+  }
+
+  function downloadSingleSlide(slide){
+    var proceed = true;
+    if(slide.key === 'beforeAfter' && slideIsSkippedOnExport('beforeAfter')){
+      proceed = window.confirm('No before/after photos have been added. Download this slide anyway?');
+    }
+    if(!proceed) return;
+    showStatus('exportStatus', 'Rendering ' + slide.label + '…');
+    captureSlideCanvas(slide.render())
+      .then(canvasToBlob)
+      .then(function(blob){
+        triggerDownload(blob, baseFilenamePrefix() + '-' + slide.filenameSuffix + '.png');
+        showStatus('exportStatus', 'Downloaded ' + slide.label + '.');
+      })
+      .catch(function(err){
+        showStatus('exportStatus', 'Export failed: ' + err.message);
+      });
+  }
+
+  function downloadAllSlides(){
+    var slides = currentSlideList();
+    if(!slides.length) return;
+    var zip = new JSZip();
+    var skippedNames = [];
+    var chain = Promise.resolve();
+    var included = 0;
+
+    slides.forEach(function(slide){
+      if(SLIDE_PHOTO_REQUIREMENTS[slide.key] && slideIsSkippedOnExport(slide.key)){
+        skippedNames.push(slide.label);
+        return;
+      }
+      chain = chain.then(function(){
+        showStatus('exportStatus', 'Rendering ' + slide.label + '…');
+        return captureSlideCanvas(slide.render())
+          .then(canvasToBlob)
+          .then(function(blob){
+            zip.file(baseFilenamePrefix() + '-' + slide.filenameSuffix + '.png', blob);
+            included++;
+          });
+      });
+    });
+
+    chain.then(function(){
+      if(!included){
+        showStatus('exportStatus', 'Nothing to export — all slides were skipped.');
+        return;
+      }
+      showStatus('exportStatus', 'Zipping ' + included + ' slide(s)…');
+      return zip.generateAsync({ type: 'blob' }).then(function(blob){
+        triggerDownload(blob, baseFilenamePrefix() + '.zip');
+        var msg = 'Downloaded ' + included + ' slide(s) as ZIP.';
+        if(skippedNames.length){
+          msg += '\nSkipped: ' + skippedNames.join(', ') + ' (no photo added).';
+        }
+        showStatus('exportStatus', msg);
+      });
+    }).catch(function(err){
+      showStatus('exportStatus', 'Export failed: ' + err.message);
+    });
+  }
+
+  /* ---------------- form <-> state binding ---------------- */
+
+  function populateFormFromState(){
+    document.getElementById('weekInput').value = state.week;
+    document.getElementById('dayInput').value = state.day;
+
+    document.querySelectorAll('.tab-btn').forEach(function(btn){
+      btn.classList.toggle('active', btn.dataset.mode === state.mode);
+    });
+
+    document.getElementById('section-title').classList.toggle('hidden', state.mode !== 'daily');
+    document.getElementById('section-steps').classList.toggle('hidden', state.mode === 'recap');
+    document.getElementById('section-fuel').classList.toggle('hidden', state.mode === 'recap');
+    document.getElementById('section-recap').classList.toggle('hidden', state.mode !== 'recap');
+    document.getElementById('dayFieldWrap').classList.toggle('hidden', state.mode === 'recap');
+
+    var d = state.daily;
+    document.getElementById('subtitleInput').value = d.subtitle;
+    document.getElementById('dateInput').value = d.date;
+    document.getElementById('stepsTodayInput').value = d.stepsToday;
+    document.getElementById('stepsNoteInput').value = d.stepsNote;
+    document.getElementById('caloriesInput').value = d.caloriesToday;
+    document.getElementById('carbsInput').value = d.carbsG;
+    document.getElementById('proteinInput').value = d.proteinG;
+    document.getElementById('fatInput').value = d.fatG;
+    document.getElementById('waterInput').value = d.waterL;
+
+    var w = state.weekly;
+    document.getElementById('dateRangeInput').value = w.dateRange;
+    document.getElementById('weeklyStepsInput').value = w.weeklyStepsTotal;
+    document.getElementById('weeklyWorkoutsInput').value = w.weeklyWorkoutsDone;
+    document.getElementById('weeklyCardioInput').value = w.weeklyCardioDone;
+    document.getElementById('avgWaterInput').value = w.avgWaterL;
+    document.getElementById('weightCurrentInput').value = w.weightCurrent;
+    document.getElementById('waistInput').value = w.waist;
+    document.getElementById('energyInput').value = w.energyWeek;
+    document.getElementById('beforeLabelInput').value = w.beforeLabel;
+    document.getElementById('afterLabelInput').value = w.afterLabel;
+    document.getElementById('winsInput').value = w.winsText;
+    document.getElementById('challengesInput').value = w.challengesText;
+
+    var g = state.goals;
+    document.getElementById('goalStepsInput').value = g.stepsGoal;
+    document.getElementById('goalCarbsInput').value = g.carbsGoal;
+    document.getElementById('goalProteinInput').value = g.proteinGoal;
+    document.getElementById('goalFatInput').value = g.fatGoal;
+    document.getElementById('goalWaterInput').value = g.waterGoal;
+    document.getElementById('goalWeightStartInput').value = g.weightStart;
+    document.getElementById('goalWeightGoalInput').value = g.weightGoal;
+    document.getElementById('goalWorkoutsInput').value = g.weeklyWorkoutsGoal;
+    document.getElementById('goalCardioInput').value = g.weeklyCardioGoal;
+
+    updatePhotoPreview('mealPhotoPreview', state.photos.meal);
+    updatePhotoPreview('beforePhotoPreview', state.photos.before);
+    updatePhotoPreview('afterPhotoPreview', state.photos.after);
+
+    document.getElementById('saveStatus').textContent = '';
+    document.getElementById('exportStatus').textContent = '';
+  }
+
+  function updatePhotoPreview(elId, src){
+    var el = document.getElementById(elId);
+    if(src){ el.src = src; el.style.display = ''; }
+    else { el.style.display = 'none'; el.removeAttribute('src'); }
+  }
+
+  function bindDailyField(inputId, field){
+    document.getElementById(inputId).addEventListener('input', function(e){
+      state.daily[field] = e.target.value;
+      renderPreview();
+    });
+  }
+  function bindWeeklyField(inputId, field){
+    document.getElementById(inputId).addEventListener('input', function(e){
+      state.weekly[field] = e.target.value;
+      renderPreview();
+    });
+  }
+  function bindGoalField(inputId, field){
+    document.getElementById(inputId).addEventListener('input', function(e){
+      state.goals[field] = Number(e.target.value) || 0;
+      saveGoals();
+      renderPreview();
+    });
+  }
+  function bindPhotoField(inputId, previewId, photoKey){
+    document.getElementById(inputId).addEventListener('change', function(e){
+      var file = e.target.files[0];
+      if(!file) return;
+      var reader = new FileReader();
+      reader.onload = function(){
+        state.photos[photoKey] = reader.result;
+        updatePhotoPreview(previewId, reader.result);
+        renderPreview();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function initBindings(){
+    document.getElementById('weekInput').addEventListener('input', function(e){
+      state.week = Math.max(1, Number(e.target.value) || 1);
+      loadEntryForCurrentSelection();
+      populateFormFromState();
+      renderPreview();
+    });
+    document.getElementById('dayInput').addEventListener('input', function(e){
+      var v = Math.max(1, Math.min(7, Number(e.target.value) || 1));
+      state.day = v;
+      loadEntryForCurrentSelection();
+      populateFormFromState();
+      renderPreview();
+    });
+
+    document.querySelectorAll('.tab-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        state.mode = btn.dataset.mode;
+        loadEntryForCurrentSelection();
+        populateFormFromState();
+        renderPreview();
+      });
+    });
+
+    bindDailyField('subtitleInput', 'subtitle');
+    bindDailyField('dateInput', 'date');
+    bindDailyField('stepsTodayInput', 'stepsToday');
+    bindDailyField('stepsNoteInput', 'stepsNote');
+    bindDailyField('caloriesInput', 'caloriesToday');
+    bindDailyField('carbsInput', 'carbsG');
+    bindDailyField('proteinInput', 'proteinG');
+    bindDailyField('fatInput', 'fatG');
+    bindDailyField('waterInput', 'waterL');
+
+    bindWeeklyField('dateRangeInput', 'dateRange');
+    bindWeeklyField('weeklyStepsInput', 'weeklyStepsTotal');
+    bindWeeklyField('weeklyWorkoutsInput', 'weeklyWorkoutsDone');
+    bindWeeklyField('weeklyCardioInput', 'weeklyCardioDone');
+    bindWeeklyField('avgWaterInput', 'avgWaterL');
+    bindWeeklyField('weightCurrentInput', 'weightCurrent');
+    bindWeeklyField('waistInput', 'waist');
+    bindWeeklyField('energyInput', 'energyWeek');
+    bindWeeklyField('beforeLabelInput', 'beforeLabel');
+    bindWeeklyField('afterLabelInput', 'afterLabel');
+    bindWeeklyField('winsInput', 'winsText');
+    bindWeeklyField('challengesInput', 'challengesText');
+
+    bindGoalField('goalStepsInput', 'stepsGoal');
+    bindGoalField('goalCarbsInput', 'carbsGoal');
+    bindGoalField('goalProteinInput', 'proteinGoal');
+    bindGoalField('goalFatInput', 'fatGoal');
+    bindGoalField('goalWaterInput', 'waterGoal');
+    bindGoalField('goalWeightStartInput', 'weightStart');
+    bindGoalField('goalWeightGoalInput', 'weightGoal');
+    bindGoalField('goalWorkoutsInput', 'weeklyWorkoutsGoal');
+    bindGoalField('goalCardioInput', 'weeklyCardioGoal');
+
+    bindPhotoField('mealPhotoInput', 'mealPhotoPreview', 'meal');
+    bindPhotoField('beforePhotoInput', 'beforePhotoPreview', 'before');
+    bindPhotoField('afterPhotoInput', 'afterPhotoPreview', 'after');
+
+    document.getElementById('saveBtn').addEventListener('click', saveCurrentEntry);
+    document.getElementById('autofillBtn').addEventListener('click', autofillFromWeek);
+    document.getElementById('downloadAllBtn').addEventListener('click', downloadAllSlides);
+  }
+
+  function init(){
+    loadGoals();
+    loadEntryForCurrentSelection();
+    initBindings();
+    populateFormFromState();
+    renderPreview();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
