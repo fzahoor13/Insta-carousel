@@ -122,12 +122,13 @@ input:focus, textarea:focus{
   flex:1;
   border:none;
   background:transparent;
-  padding:10px 6px;
-  font-size:12.5px;
+  padding:10px 4px;
+  font-size:11px;
   font-weight:700;
   color:var(--app-ink-soft);
   border-radius:8px;
   cursor:pointer;
+  white-space:nowrap;
 }
 .tab-btn.active{
   background:#fff;
@@ -520,6 +521,22 @@ details.goals-panel summary{
 .stats-grid .stat-value{ font-size:52px; }
 .stats-grid .stat-label{ font-size:22px; }
 
+/* ---------- Progress trend dashboard (internal only, not exported) ---------- */
+.trend-dashboard{ width:100%; }
+.trend-empty{ font-size:14px; color:var(--app-ink-soft); }
+.trend-summary-grid{ display:flex; flex-wrap:wrap; gap:16px; margin-bottom:24px; }
+.trend-card{ background:#fff; border:1px solid #E8E1DC; border-radius:12px; padding:16px 20px; min-width:130px; }
+.trend-card-value{ font-size:22px; font-weight:800; color:var(--app-ink); }
+.trend-card-label{ font-size:12px; color:var(--app-ink-soft); margin-top:4px; text-transform:uppercase; letter-spacing:0.03em; }
+.trend-chart-row{ display:flex; gap:20px; flex-wrap:wrap; margin-bottom:24px; }
+.trend-chart-card{ background:#fff; border:1px solid #E8E1DC; border-radius:12px; padding:16px 20px; flex:1; min-width:340px; }
+.trend-chart-title{ font-size:13px; font-weight:700; color:var(--app-ink); margin-bottom:8px; }
+.trend-table-wrap{ background:#fff; border:1px solid #E8E1DC; border-radius:12px; overflow-x:auto; }
+.trend-table{ width:100%; border-collapse:collapse; font-size:13px; }
+.trend-table th, .trend-table td{ padding:10px 14px; text-align:left; border-bottom:1px solid #EEE7E2; white-space:nowrap; }
+.trend-table tr:last-child td{ border-bottom:none; }
+.trend-table th{ color:var(--app-ink-soft); font-size:11px; text-transform:uppercase; letter-spacing:0.03em; }
+
 #exportStage{
   position:fixed;
   top:0;
@@ -533,8 +550,8 @@ details.goals-panel summary{
     <h1>Fitness Journey Carousel Generator</h1>
     <p class="app-sub">Instagram data-slide export for workout &amp; recap posts</p>
 
-    <div class="field-row">
-      <div class="field">
+    <div class="field-row" id="weekDayFieldRow">
+      <div class="field" id="weekFieldWrap">
         <label for="weekInput">Week #</label>
         <input type="number" id="weekInput" min="1" value="1">
       </div>
@@ -548,6 +565,7 @@ details.goals-panel summary{
       <button class="tab-btn active" data-mode="daily">Daily Post</button>
       <button class="tab-btn" data-mode="rest">Rest Day Log</button>
       <button class="tab-btn" data-mode="recap">Weekly Recap</button>
+      <button class="tab-btn" data-mode="progress">Progress</button>
     </div>
 
     <!-- Title section (Daily Post only) -->
@@ -738,7 +756,7 @@ details.goals-panel summary{
       </div>
     </details>
 
-    <div class="btn-row">
+    <div class="btn-row" id="saveRow">
       <button class="btn btn-primary" id="saveBtn">Save Entry</button>
     </div>
     <div class="status-msg" id="saveStatus"></div>
@@ -805,6 +823,9 @@ details.goals-panel summary{
   }
 
   function loadEntryForCurrentSelection(){
+    if(state.mode === 'progress'){
+      return;
+    }
     if(state.mode === 'recap'){
       var raw = localStorage.getItem(recapKey(state.week));
       state.weekly = raw ? Object.assign(blankWeekly(), JSON.parse(raw)) : blankWeekly();
@@ -1049,6 +1070,137 @@ details.goals-panel summary{
     return [];
   }
 
+  /* ---------------- progress trend dashboard ---------------- */
+
+  function computeTrendData(){
+    var weeks = [];
+    for(var w = 1; w <= 52; w++){
+      var raw = localStorage.getItem(recapKey(w));
+      if(!raw) continue;
+      var entry = JSON.parse(raw);
+      weeks.push({
+        week: w,
+        dateRange: entry.dateRange || '',
+        weightCurrent: Number(entry.weightCurrent) || 0,
+        weeklyStepsTotal: Number(entry.weeklyStepsTotal) || 0,
+        weeklyWorkoutsDone: Number(entry.weeklyWorkoutsDone) || 0,
+        weeklyCardioDone: Number(entry.weeklyCardioDone) || 0,
+        avgWaterL: Number(entry.avgWaterL) || 0
+      });
+    }
+    return weeks;
+  }
+
+  function summaryCard(label, value){
+    return '<div class="trend-card"><div class="trend-card-value">' + esc(value) + '</div><div class="trend-card-label">' + esc(label) + '</div></div>';
+  }
+
+  function buildLineChart(points, opts){
+    var w = 520, h = 220, padL = 44, padR = 16, padT = 20, padB = 30;
+    var xs = points.map(function(p){ return p.x; });
+    var ys = points.map(function(p){ return p.y; });
+    if(opts.goalY != null) ys = ys.concat([opts.goalY]);
+    var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+    var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+    if(minY === maxY){ minY -= 1; maxY += 1; }
+    var pad = (maxY - minY) * 0.15;
+    minY -= pad; maxY += pad;
+    function xPos(x){ return maxX === minX ? padL : padL + ((x - minX) / (maxX - minX)) * (w - padL - padR); }
+    function yPos(y){ return padT + (1 - (y - minY) / (maxY - minY)) * (h - padT - padB); }
+
+    var pathD = points.map(function(p, i){ return (i === 0 ? 'M' : 'L') + xPos(p.x).toFixed(1) + ' ' + yPos(p.y).toFixed(1); }).join(' ');
+    var dots = points.map(function(p){ return '<circle cx="' + xPos(p.x).toFixed(1) + '" cy="' + yPos(p.y).toFixed(1) + '" r="4" fill="' + opts.color + '"/>'; }).join('');
+    var xLabels = points.map(function(p){ return '<text x="' + xPos(p.x).toFixed(1) + '" y="' + (h - 8) + '" font-size="11" text-anchor="middle" fill="#8C7982">W' + p.x + '</text>'; }).join('');
+    var goalLine = opts.goalY != null
+      ? '<line x1="' + padL + '" y1="' + yPos(opts.goalY).toFixed(1) + '" x2="' + (w - padR) + '" y2="' + yPos(opts.goalY).toFixed(1) + '" stroke="#B5606B" stroke-width="1.5" stroke-dasharray="4 4"/>' +
+        '<text x="' + (w - padR) + '" y="' + (yPos(opts.goalY) - 6).toFixed(1) + '" font-size="11" text-anchor="end" fill="#B5606B">Goal</text>'
+      : '';
+
+    return '<div class="trend-chart-title">' + esc(opts.label) + '</div>' +
+      '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '">' +
+        goalLine +
+        '<path d="' + pathD + '" fill="none" stroke="' + opts.color + '" stroke-width="3"/>' +
+        dots +
+        xLabels +
+      '</svg>';
+  }
+
+  function buildBarChart(points, opts){
+    var w = 520, h = 220, padL = 44, padR = 16, padT = 20, padB = 30;
+    var maxY = Math.max.apply(null, points.map(function(p){ return p.y; }).concat([1]));
+    var step = (w - padL - padR) / points.length;
+    var barW = step * 0.6;
+    var bars = points.map(function(p, i){
+      var x = padL + i * step + (step - barW) / 2;
+      var barH = maxY ? (p.y / maxY) * (h - padT - padB) : 0;
+      var y = h - padB - barH;
+      return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + barH.toFixed(1) + '" rx="4" fill="' + opts.color + '"/>' +
+        '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (h - 8) + '" font-size="11" text-anchor="middle" fill="#8C7982">W' + p.x + '</text>';
+    }).join('');
+    return '<div class="trend-chart-title">' + esc(opts.label) + '</div>' +
+      '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '">' + bars + '</svg>';
+  }
+
+  function renderProgressDashboard(){
+    var grid = document.getElementById('previewGrid');
+    grid.innerHTML = '';
+    var data = computeTrendData();
+    var g = state.goals;
+
+    var dash = document.createElement('div');
+    dash.className = 'trend-dashboard';
+
+    if(!data.length){
+      dash.innerHTML = '<p class="trend-empty">No weekly recap data saved yet. Fill out and save a Weekly Recap to start building your trend.</p>';
+      grid.appendChild(dash);
+      return;
+    }
+
+    var first = data[0];
+    var latest = data[data.length - 1];
+    var totalChange = first.weightCurrent - latest.weightCurrent;
+
+    var summaryHtml = '<div class="trend-summary-grid">' +
+      summaryCard('Weeks Logged', data.length) +
+      summaryCard('Starting Weight', first.weightCurrent + ' kg') +
+      summaryCard('Current Weight', latest.weightCurrent + ' kg') +
+      summaryCard('Goal Weight', num(g.weightGoal) + ' kg') +
+      summaryCard('Total Change', (totalChange >= 0 ? '-' : '+') + Math.abs(totalChange).toFixed(1) + ' kg') +
+      '</div>';
+
+    var weightChart = buildLineChart(
+      data.map(function(d){ return { x: d.week, y: d.weightCurrent }; }),
+      { goalY: num(g.weightGoal), label: 'Weight Trend (kg)', color: '#539B6E' }
+    );
+    var stepsChart = buildBarChart(
+      data.map(function(d){ return { x: d.week, y: d.weeklyStepsTotal }; }),
+      { label: 'Total Steps per Week', color: '#389DB9' }
+    );
+
+    var tableRows = data.map(function(d){
+      return '<tr>' +
+        '<td>' + d.week + '</td>' +
+        '<td>' + esc(d.dateRange) + '</td>' +
+        '<td>' + d.weightCurrent + ' kg</td>' +
+        '<td>' + d.weeklyStepsTotal.toLocaleString() + '</td>' +
+        '<td>' + d.weeklyWorkoutsDone + '/' + num(g.weeklyWorkoutsGoal) + '</td>' +
+        '<td>' + d.weeklyCardioDone + '/' + num(g.weeklyCardioGoal) + '</td>' +
+        '<td>' + d.avgWaterL + ' L</td>' +
+      '</tr>';
+    }).join('');
+
+    dash.innerHTML = summaryHtml +
+      '<div class="trend-chart-row">' +
+        '<div class="trend-chart-card">' + weightChart + '</div>' +
+        '<div class="trend-chart-card">' + stepsChart + '</div>' +
+      '</div>' +
+      '<div class="trend-table-wrap"><table class="trend-table"><thead><tr>' +
+        '<th>Week</th><th>Dates</th><th>Weight</th><th>Steps</th><th>Workouts</th><th>Cardio</th><th>Avg Water</th>' +
+      '</tr></thead><tbody>' + tableRows + '</tbody></table></div>';
+
+    grid.appendChild(dash);
+  }
+
   function slideIsSkippedOnExport(slideKey){
     var req = SLIDE_PHOTO_REQUIREMENTS[slideKey];
     if(!req) return false;
@@ -1066,6 +1218,12 @@ details.goals-panel summary{
     if(state.mode === 'rest'){
       previewTitle.textContent = 'Rest Day Log — nothing to export';
       downloadAllBtn.classList.add('hidden');
+      return;
+    }
+    if(state.mode === 'progress'){
+      previewTitle.textContent = '8-Week Progress — internal tracker, not exported';
+      downloadAllBtn.classList.add('hidden');
+      renderProgressDashboard();
       return;
     }
     downloadAllBtn.classList.remove('hidden');
@@ -1226,10 +1384,12 @@ details.goals-panel summary{
     });
 
     document.getElementById('section-title').classList.toggle('hidden', state.mode !== 'daily');
-    document.getElementById('section-steps').classList.toggle('hidden', state.mode === 'recap');
-    document.getElementById('section-fuel').classList.toggle('hidden', state.mode === 'recap');
+    document.getElementById('section-steps').classList.toggle('hidden', state.mode === 'recap' || state.mode === 'progress');
+    document.getElementById('section-fuel').classList.toggle('hidden', state.mode === 'recap' || state.mode === 'progress');
     document.getElementById('section-recap').classList.toggle('hidden', state.mode !== 'recap');
-    document.getElementById('dayFieldWrap').classList.toggle('hidden', state.mode === 'recap');
+    document.getElementById('dayFieldWrap').classList.toggle('hidden', state.mode === 'recap' || state.mode === 'progress');
+    document.getElementById('weekFieldWrap').classList.toggle('hidden', state.mode === 'progress');
+    document.getElementById('saveRow').classList.toggle('hidden', state.mode === 'progress');
 
     var d = state.daily;
     document.getElementById('subtitleInput').value = d.subtitle;
