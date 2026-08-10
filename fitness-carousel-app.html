@@ -335,8 +335,8 @@ details.goals-panel summary{
 
 /* Steps */
 .slide-steps{ background:var(--bg-sage-tint); }
-.slide-steps .slide-body{ align-items:center; justify-content:center; }
-.steps-ring-wrap{ position:relative; width:520px; height:520px; }
+.slide-steps .slide-body{ align-items:center; justify-content:flex-start; padding-top:36px; }
+.steps-ring-wrap{ position:relative; width:380px; height:380px; flex-shrink:0; }
 .steps-ring-center{
   position:absolute;
   inset:0;
@@ -349,22 +349,59 @@ details.goals-panel summary{
 .steps-number{
   font-family:'Poppins',sans-serif;
   font-weight:800;
-  font-size:96px;
+  font-size:64px;
   color:var(--heading-sage);
   line-height:1;
 }
 .steps-goal{
-  font-size:28px;
+  font-size:20px;
   font-weight:600;
   color:var(--text-muted);
-  margin-top:14px;
+  margin-top:10px;
 }
+.steps-stat-row{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:16px;
+  width:100%;
+  margin-top:40px;
+}
+.steps-stat-block{
+  background:var(--card-white);
+  border:1px solid var(--track-alt);
+  border-radius:20px;
+  padding:20px 30px;
+  min-width:260px;
+  text-align:center;
+}
+.steps-stat-label{
+  font-size:15px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  color:var(--text-muted);
+  margin-bottom:10px;
+}
+.steps-stat-value{
+  font-family:'Poppins',sans-serif;
+  font-weight:700;
+  font-size:28px;
+  color:var(--text-dark);
+  margin-bottom:12px;
+}
+.steps-stat-value span{
+  font-size:18px;
+  font-weight:500;
+  color:var(--text-muted);
+}
+.steps-stat-bar{ height:10px; }
 .steps-footer{
   position:absolute;
   left:0; right:0; bottom:0;
   text-align:center;
   font-style:italic;
-  font-size:24px;
+  font-size:22px;
   color:var(--text-muted);
 }
 
@@ -1170,23 +1207,31 @@ details.goals-panel summary{
   function renderStepsSlide(){
     var d = state.daily, g = state.goals;
     var stepsToday = num(d.stepsToday), stepsGoal = num(g.stepsGoal) || 1;
-    var radius = 220, circumference = 2 * Math.PI * radius;
+    var radius = 170, circumference = 2 * Math.PI * radius;
     var fraction = clamp01(stepsToday / stepsGoal);
     var dash = fraction * circumference;
+    var waterPct = pct(num(d.waterL), num(g.waterGoal));
     return '' +
       '<div class="slide slide-steps">' +
         '<div class="pill">STEPS</div>' +
         '<div class="slide-body">' +
           '<div class="steps-ring-wrap">' +
-            '<svg width="520" height="520" viewBox="0 0 520 520">' +
-              '<circle cx="260" cy="260" r="' + radius + '" stroke="#2A2F34" stroke-width="36" fill="none"/>' +
-              '<circle cx="260" cy="260" r="' + radius + '" stroke="#D4FF3F" stroke-width="36" fill="none" ' +
+            '<svg width="380" height="380" viewBox="0 0 380 380">' +
+              '<circle cx="190" cy="190" r="' + radius + '" stroke="#2A2F34" stroke-width="28" fill="none"/>' +
+              '<circle cx="190" cy="190" r="' + radius + '" stroke="#D4FF3F" stroke-width="28" fill="none" ' +
                 'stroke-linecap="round" stroke-dasharray="' + dash.toFixed(2) + ' ' + circumference.toFixed(2) + '" ' +
-                'transform="rotate(-90 260 260)"/>' +
+                'transform="rotate(-90 190 190)"/>' +
             '</svg>' +
             '<div class="steps-ring-center">' +
               '<div class="steps-number">' + stepsToday.toLocaleString() + '</div>' +
               '<div class="steps-goal">of ' + num(g.stepsGoal).toLocaleString() + ' goal</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="steps-stat-row">' +
+            '<div class="steps-stat-block">' +
+              '<div class="steps-stat-label">Water</div>' +
+              '<div class="steps-stat-value">' + num(d.waterL) + '<span> / ' + num(g.waterGoal) + ' L</span></div>' +
+              '<div class="bar-track steps-stat-bar"><div class="bar-fill" style="width:' + waterPct + '%;background:var(--bar-water)"></div></div>' +
             '</div>' +
           '</div>' +
           '<div class="steps-footer">' + esc(d.stepsNote) + '</div>' +
