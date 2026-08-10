@@ -438,16 +438,56 @@ details.goals-panel summary{
   font-size:120px;
   color:var(--heading-sage);
   line-height:1;
-  margin-top:60px;
+  margin-top:40px;
 }
 .body-weight-unit{ font-size:48px; margin-left:8px; }
 .body-weight-goal{
   font-size:28px;
   color:var(--text-muted);
-  margin:16px 0 36px;
+  margin:12px 0 28px;
 }
 .body-bar-track{ height:24px; }
-.body-rows{ margin-top:56px; display:flex; flex-direction:column; gap:20px; }
+.body-measure-grid{
+  margin-top:44px;
+  margin-bottom:28px;
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:16px;
+}
+.body-measure-card{
+  background:var(--card-white);
+  border-radius:20px;
+  padding:22px 14px;
+  text-align:center;
+}
+.body-measure-label{
+  font-size:16px;
+  font-weight:700;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+}
+.body-measure-value{
+  font-family:'Poppins',sans-serif;
+  font-weight:700;
+  font-size:34px;
+  color:var(--text-dark);
+  line-height:1;
+  margin-top:8px;
+}
+.body-measure-unit{ font-size:18px; margin-left:2px; }
+.body-measure-deltas{
+  margin-top:10px;
+  font-size:15px;
+  font-weight:600;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  color:var(--text-muted);
+}
+.body-measure-delta-up{ color:var(--badge-duration); }
+.body-measure-delta-down{ color:var(--bar-sage-strong); }
+.body-measure-delta-flat{ color:var(--text-muted); }
 .body-row{
   background:var(--card-white);
   border-radius:20px;
@@ -531,6 +571,9 @@ details.goals-panel summary{
 .trend-chart-row{ display:flex; gap:20px; flex-wrap:wrap; margin-bottom:24px; }
 .trend-chart-card{ background:#fff; border:1px solid #E8E1DC; border-radius:12px; padding:16px 20px; flex:1; min-width:340px; }
 .trend-chart-title{ font-size:13px; font-weight:700; color:var(--app-ink); margin-bottom:8px; }
+.trend-legend{ display:flex; flex-wrap:wrap; gap:14px; margin-top:4px; }
+.trend-legend-item{ display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--app-ink-soft); }
+.trend-legend-dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
 .trend-table-wrap{ background:#fff; border:1px solid #E8E1DC; border-radius:12px; overflow-x:auto; }
 .trend-table{ width:100%; border-collapse:collapse; font-size:13px; }
 .trend-table th, .trend-table td{ padding:10px 14px; text-align:left; border-bottom:1px solid #EEE7E2; white-space:nowrap; }
@@ -666,11 +709,32 @@ details.goals-panel summary{
         <label for="weightCurrentInput">Current Weight (kg)</label>
         <input type="number" id="weightCurrentInput" min="0" step="0.1" value="0">
       </div>
-      <div class="field" style="margin-bottom:12px;">
-        <label for="waistInput">Waist Measurement</label>
-        <input type="text" id="waistInput" placeholder="e.g. 78 cm">
+      <div style="margin-bottom:8px; font-size:12px; font-weight:600; color:var(--app-ink-soft); text-transform:uppercase; letter-spacing:0.03em;">Body Measurements (in)</div>
+      <div class="field-row">
+        <div class="field">
+          <label for="waistInInput">Waist</label>
+          <input type="number" id="waistInInput" min="0" step="0.1" value="0">
+        </div>
+        <div class="field">
+          <label for="chestInInput">Chest</label>
+          <input type="number" id="chestInInput" min="0" step="0.1" value="0">
+        </div>
       </div>
-      <div class="field">
+      <div class="field-row">
+        <div class="field">
+          <label for="hipsInInput">Hips</label>
+          <input type="number" id="hipsInInput" min="0" step="0.1" value="0">
+        </div>
+        <div class="field">
+          <label for="armsInInput">Arms</label>
+          <input type="number" id="armsInInput" min="0" step="0.1" value="0">
+        </div>
+        <div class="field">
+          <label for="legsInInput">Legs</label>
+          <input type="number" id="legsInInput" min="0" step="0.1" value="0">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:12px;">
         <label for="energyInput">Energy This Week</label>
         <input type="text" id="energyInput" placeholder="e.g. Felt strong all week">
       </div>
@@ -787,13 +851,22 @@ details.goals-panel summary{
     weightStart: 60, weightGoal: 52, weeklyWorkoutsGoal: 3, weeklyCardioGoal: 2
   };
 
+  var MEASURE_FIELDS = [
+    { key:'waistIn', label:'Waist', color:'#CC8F5C' },
+    { key:'chestIn', label:'Chest', color:'#539B6E' },
+    { key:'hipsIn', label:'Hips', color:'#A693C9' },
+    { key:'armsIn', label:'Arms', color:'#389DB9' },
+    { key:'legsIn', label:'Legs', color:'#CF7F79' }
+  ];
+
   function blankDaily(){
     return { subtitle:'', date:'', stepsToday:0, stepsNote:'', caloriesToday:0, carbsG:0, proteinG:0, fatG:0, waterL:0 };
   }
   function blankWeekly(){
     return {
       dateRange:'', weeklyStepsTotal:0, weeklyWorkoutsDone:0, weeklyCardioDone:0, avgWaterL:0,
-      weightCurrent:0, waist:'', energyWeek:'', winsText:'', challengesText:'',
+      weightCurrent:0, waistIn:0, chestIn:0, hipsIn:0, armsIn:0, legsIn:0,
+      energyWeek:'', winsText:'', challengesText:'',
       beforeLabel:'Day 1', afterLabel:'Day 3'
     };
   }
@@ -988,11 +1061,42 @@ details.goals-panel summary{
       '</div>';
   }
 
+  function formatMeasureDelta(delta){
+    if(delta == null) return '<span class="body-measure-delta-flat">&mdash;</span>';
+    var rounded = Math.round(delta * 10) / 10;
+    var cls = rounded === 0 ? 'body-measure-delta-flat' : (rounded < 0 ? 'body-measure-delta-down' : 'body-measure-delta-up');
+    var sign = rounded > 0 ? '+' : '';
+    return '<span class="' + cls + '">' + sign + rounded + '&Prime;</span>';
+  }
+
+  function computeMeasureDelta(field, currentValue){
+    var series = computeTrendData().filter(function(d){ return d.week < state.week; });
+    if(!series.length) return { weekDelta: null, totalDelta: null };
+    return {
+      weekDelta: currentValue - series[series.length - 1][field],
+      totalDelta: currentValue - series[0][field]
+    };
+  }
+
   function renderBodyCheckSlide(){
     var w = state.weekly, g = state.goals;
     var start = num(g.weightStart), goal = num(g.weightGoal), current = num(w.weightCurrent);
     var denom = (start - goal);
     var fraction = denom !== 0 ? clamp01((start - current) / denom) : 0;
+
+    var measureCards = MEASURE_FIELDS.map(function(m){
+      var mCurrent = num(w[m.key]);
+      var delta = computeMeasureDelta(m.key, mCurrent);
+      return '<div class="body-measure-card">' +
+        '<div class="body-measure-label">' + esc(m.label) + '</div>' +
+        '<div class="body-measure-value">' + mCurrent + '<span class="body-measure-unit">in</span></div>' +
+        '<div class="body-measure-deltas">' +
+          '<div>' + formatMeasureDelta(delta.weekDelta) + ' wk</div>' +
+          '<div>' + formatMeasureDelta(delta.totalDelta) + ' total</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
     return '' +
       '<div class="slide slide-body-check">' +
         '<div class="pill">BODY CHECK</div>' +
@@ -1000,10 +1104,8 @@ details.goals-panel summary{
           '<div class="body-weight">' + current + '<span class="body-weight-unit">kg</span></div>' +
           '<div class="body-weight-goal">&rarr; ' + goal + ' kg goal</div>' +
           '<div class="bar-track body-bar-track"><div class="bar-fill" style="width:' + (fraction * 100) + '%;background:var(--bar-sage-strong)"></div></div>' +
-          '<div class="body-rows">' +
-            '<div class="body-row"><span class="body-row-label">Waist</span><span class="body-row-value">' + esc(w.waist) + '</span></div>' +
-            '<div class="body-row"><span class="body-row-label">Energy this week</span><span class="body-row-value">' + esc(w.energyWeek) + '</span></div>' +
-          '</div>' +
+          '<div class="body-measure-grid">' + measureCards + '</div>' +
+          '<div class="body-row"><span class="body-row-label">Energy this week</span><span class="body-row-value">' + esc(w.energyWeek) + '</span></div>' +
         '</div>' +
       '</div>';
   }
@@ -1078,7 +1180,7 @@ details.goals-panel summary{
       var raw = localStorage.getItem(recapKey(w));
       if(!raw) continue;
       var entry = JSON.parse(raw);
-      weeks.push({
+      var week = {
         week: w,
         dateRange: entry.dateRange || '',
         weightCurrent: Number(entry.weightCurrent) || 0,
@@ -1086,7 +1188,9 @@ details.goals-panel summary{
         weeklyWorkoutsDone: Number(entry.weeklyWorkoutsDone) || 0,
         weeklyCardioDone: Number(entry.weeklyCardioDone) || 0,
         avgWaterL: Number(entry.avgWaterL) || 0
-      });
+      };
+      MEASURE_FIELDS.forEach(function(m){ week[m.key] = Number(entry[m.key]) || 0; });
+      weeks.push(week);
     }
     return weeks;
   }
@@ -1141,6 +1245,37 @@ details.goals-panel summary{
       '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '">' + bars + '</svg>';
   }
 
+  function buildMultiLineChart(series, opts){
+    var w = 520, h = 220, padL = 44, padR = 16, padT = 20, padB = 44;
+    var allX = [], allY = [];
+    series.forEach(function(s){
+      s.points.forEach(function(p){ allX.push(p.x); allY.push(p.y); });
+    });
+    var minX = Math.min.apply(null, allX), maxX = Math.max.apply(null, allX);
+    var minY = Math.min.apply(null, allY), maxY = Math.max.apply(null, allY);
+    if(minY === maxY){ minY -= 1; maxY += 1; }
+    var pad = (maxY - minY) * 0.15;
+    minY -= pad; maxY += pad;
+    function xPos(x){ return maxX === minX ? padL : padL + ((x - minX) / (maxX - minX)) * (w - padL - padR); }
+    function yPos(y){ return padT + (1 - (y - minY) / (maxY - minY)) * (h - padT - padB); }
+
+    var xLabels = series[0].points.map(function(p){ return '<text x="' + xPos(p.x).toFixed(1) + '" y="' + (h - 26) + '" font-size="11" text-anchor="middle" fill="#8C7982">W' + p.x + '</text>'; }).join('');
+
+    var lines = series.map(function(s){
+      var pathD = s.points.map(function(p, i){ return (i === 0 ? 'M' : 'L') + xPos(p.x).toFixed(1) + ' ' + yPos(p.y).toFixed(1); }).join(' ');
+      var dots = s.points.map(function(p){ return '<circle cx="' + xPos(p.x).toFixed(1) + '" cy="' + yPos(p.y).toFixed(1) + '" r="3.5" fill="' + s.color + '"/>'; }).join('');
+      return '<path d="' + pathD + '" fill="none" stroke="' + s.color + '" stroke-width="2.5"/>' + dots;
+    }).join('');
+
+    var legend = series.map(function(s){
+      return '<span class="trend-legend-item"><span class="trend-legend-dot" style="background:' + s.color + '"></span>' + esc(s.label) + '</span>';
+    }).join('');
+
+    return '<div class="trend-chart-title">' + esc(opts.label) + '</div>' +
+      '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '">' + lines + xLabels + '</svg>' +
+      '<div class="trend-legend">' + legend + '</div>';
+  }
+
   function renderProgressDashboard(){
     var grid = document.getElementById('previewGrid');
     grid.innerHTML = '';
@@ -1176,6 +1311,12 @@ details.goals-panel summary{
       data.map(function(d){ return { x: d.week, y: d.weeklyStepsTotal }; }),
       { label: 'Total Steps per Week', color: '#389DB9' }
     );
+    var measureChart = buildMultiLineChart(
+      MEASURE_FIELDS.map(function(m){
+        return { label: m.label, color: m.color, points: data.map(function(d){ return { x: d.week, y: d[m.key] }; }) };
+      }),
+      { label: 'Body Measurements Trend (in)' }
+    );
 
     var tableRows = data.map(function(d){
       return '<tr>' +
@@ -1186,6 +1327,7 @@ details.goals-panel summary{
         '<td>' + d.weeklyWorkoutsDone + '/' + num(g.weeklyWorkoutsGoal) + '</td>' +
         '<td>' + d.weeklyCardioDone + '/' + num(g.weeklyCardioGoal) + '</td>' +
         '<td>' + d.avgWaterL + ' L</td>' +
+        MEASURE_FIELDS.map(function(m){ return '<td>' + d[m.key] + ' in</td>'; }).join('') +
       '</tr>';
     }).join('');
 
@@ -1194,8 +1336,12 @@ details.goals-panel summary{
         '<div class="trend-chart-card">' + weightChart + '</div>' +
         '<div class="trend-chart-card">' + stepsChart + '</div>' +
       '</div>' +
+      '<div class="trend-chart-row">' +
+        '<div class="trend-chart-card">' + measureChart + '</div>' +
+      '</div>' +
       '<div class="trend-table-wrap"><table class="trend-table"><thead><tr>' +
         '<th>Week</th><th>Dates</th><th>Weight</th><th>Steps</th><th>Workouts</th><th>Cardio</th><th>Avg Water</th>' +
+        MEASURE_FIELDS.map(function(m){ return '<th>' + esc(m.label) + '</th>'; }).join('') +
       '</tr></thead><tbody>' + tableRows + '</tbody></table></div>';
 
     grid.appendChild(dash);
@@ -1409,7 +1555,11 @@ details.goals-panel summary{
     document.getElementById('weeklyCardioInput').value = w.weeklyCardioDone;
     document.getElementById('avgWaterInput').value = w.avgWaterL;
     document.getElementById('weightCurrentInput').value = w.weightCurrent;
-    document.getElementById('waistInput').value = w.waist;
+    document.getElementById('waistInInput').value = w.waistIn;
+    document.getElementById('chestInInput').value = w.chestIn;
+    document.getElementById('hipsInInput').value = w.hipsIn;
+    document.getElementById('armsInInput').value = w.armsIn;
+    document.getElementById('legsInInput').value = w.legsIn;
     document.getElementById('energyInput').value = w.energyWeek;
     document.getElementById('beforeLabelInput').value = w.beforeLabel;
     document.getElementById('afterLabelInput').value = w.afterLabel;
@@ -1514,7 +1664,11 @@ details.goals-panel summary{
     bindWeeklyField('weeklyCardioInput', 'weeklyCardioDone');
     bindWeeklyField('avgWaterInput', 'avgWaterL');
     bindWeeklyField('weightCurrentInput', 'weightCurrent');
-    bindWeeklyField('waistInput', 'waist');
+    bindWeeklyField('waistInInput', 'waistIn');
+    bindWeeklyField('chestInInput', 'chestIn');
+    bindWeeklyField('hipsInInput', 'hipsIn');
+    bindWeeklyField('armsInInput', 'armsIn');
+    bindWeeklyField('legsInInput', 'legsIn');
     bindWeeklyField('energyInput', 'energyWeek');
     bindWeeklyField('beforeLabelInput', 'beforeLabel');
     bindWeeklyField('afterLabelInput', 'afterLabel');
