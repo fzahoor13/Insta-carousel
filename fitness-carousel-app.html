@@ -183,6 +183,25 @@ input:focus, textarea:focus{
   min-height:16px;
   white-space:pre-line;
 }
+.section-hint{
+  font-size:12px;
+  color:var(--app-ink-soft);
+  margin:0 0 14px;
+  line-height:1.4;
+}
+.meal-block{
+  border:1px solid #EEE7E2;
+  border-radius:10px;
+  padding:12px 14px;
+  margin-bottom:12px;
+  background:#FBF9F7;
+}
+.meal-block summary{
+  cursor:pointer;
+  font-size:13px;
+  font-weight:700;
+  color:var(--app-ink);
+}
 details.goals-panel{
   border:1px solid #EEE7E2;
   border-radius:10px;
@@ -351,47 +370,78 @@ details.goals-panel summary{
 
 /* Fuel */
 .slide-fuel{ background:var(--bg-peach-cream); }
-.fuel-thumb{
-  position:absolute;
-  top:0; right:0;
-  width:96px; height:96px;
-  border-radius:16px;
-  object-fit:cover;
-  background:var(--track-alt);
-  border:1px solid rgba(245,243,239,0.12);
-}
 .fuel-cal{
   font-family:'Poppins',sans-serif;
   font-weight:800;
-  font-size:88px;
+  font-size:52px;
   color:var(--heading-coral);
-  margin-top:120px;
+  margin-top:84px;
   line-height:1;
 }
 .fuel-cal-label{
-  font-size:24px;
+  font-size:19px;
   color:var(--text-muted);
-  margin:10px 0 48px;
+  margin:6px 0 16px;
 }
-.fuel-bars{ display:flex; flex-direction:column; gap:22px; }
-.fuel-bar-row{ display:flex; align-items:center; gap:16px; }
-.fuel-bar-row .bar-name{ width:110px; font-size:22px; font-weight:600; }
-.fuel-bar-row .bar-val{ width:70px; text-align:right; font-size:20px; color:var(--text-muted); }
+.fuel-bars{ display:flex; flex-direction:column; gap:8px; }
+.fuel-bar-row{ display:flex; align-items:center; gap:14px; }
+.fuel-bar-row .bar-name{ width:92px; font-size:17px; font-weight:600; }
+.fuel-bar-row .bar-val{ width:60px; text-align:right; font-size:15px; color:var(--text-muted); }
 .bar-track{
   flex:1;
-  height:20px;
+  height:12px;
   border-radius:999px;
   background:var(--track-alt);
   overflow:hidden;
 }
 .bar-fill{ height:100%; }
+.meal-table{
+  margin-top:14px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.meal-row{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  background:var(--card-white);
+  border:1px solid var(--track-alt);
+  border-radius:18px;
+  padding:8px;
+}
+.meal-photo{
+  width:76px;
+  height:76px;
+  border-radius:12px;
+  object-fit:cover;
+  flex-shrink:0;
+}
+.meal-info{ flex:1; min-width:0; }
+.meal-name{
+  font-family:'Poppins',sans-serif;
+  font-weight:700;
+  font-size:19px;
+  color:var(--text-dark);
+  margin-bottom:4px;
+}
+.meal-macros{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.meal-macro-stat{
+  font-size:14px;
+  color:var(--text-muted);
+}
+.meal-macro-stat strong{ color:var(--text-dark); font-weight:700; }
 .fuel-water-card{
   position:absolute;
   left:88px; right:88px; bottom:88px;
   background:var(--card-white);
   border:1px solid var(--track-alt);
   border-radius:24px;
-  padding:26px 32px;
+  padding:22px 32px;
 }
 .fuel-water-card .bar-track{ height:18px; margin-bottom:14px; }
 .fuel-water-card .water-label{ font-size:22px; font-weight:600; }
@@ -652,34 +702,127 @@ details.goals-panel summary{
     <!-- Fuel section (Daily Post + Rest Day) -->
     <div class="section" id="section-fuel">
       <h2>Fuel</h2>
-      <div class="field" style="margin-bottom:12px;">
-        <label for="caloriesInput">Calories</label>
-        <input type="number" id="caloriesInput" min="0" value="0">
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label for="carbsInput">Carbs (g)</label>
-          <input type="number" id="carbsInput" min="0" value="0">
+      <p class="section-hint">Each meal only appears on the Fuel slide once you add its photo. Totals below auto-sum from whichever meals you fill in.</p>
+
+      <details class="meal-block" open>
+        <summary>Breakfast</summary>
+        <div class="field" style="margin:12px 0;">
+          <label>Photo</label>
+          <div class="photo-field">
+            <img class="photo-thumb-preview" id="mealBreakfastPhotoPreview" style="display:none;">
+            <input type="file" accept="image/*" id="mealBreakfastPhotoInput">
+          </div>
         </div>
-        <div class="field">
-          <label for="proteinInput">Protein (g)</label>
-          <input type="number" id="proteinInput" min="0" value="0">
+        <div class="field" style="margin-bottom:12px;">
+          <label for="breakfastCaloriesInput">Calories</label>
+          <input type="number" id="breakfastCaloriesInput" min="0" value="0">
         </div>
-        <div class="field">
-          <label for="fatInput">Fat (g)</label>
-          <input type="number" id="fatInput" min="0" value="0">
+        <div class="field-row">
+          <div class="field">
+            <label for="breakfastCarbsInput">Carbs (g)</label>
+            <input type="number" id="breakfastCarbsInput" min="0" value="0">
+          </div>
+          <div class="field">
+            <label for="breakfastProteinInput">Protein (g)</label>
+            <input type="number" id="breakfastProteinInput" min="0" value="0">
+          </div>
+          <div class="field">
+            <label for="breakfastFatInput">Fat (g)</label>
+            <input type="number" id="breakfastFatInput" min="0" value="0">
+          </div>
         </div>
-      </div>
-      <div class="field" style="margin-bottom:12px;">
+      </details>
+
+      <details class="meal-block">
+        <summary>Lunch</summary>
+        <div class="field" style="margin:12px 0;">
+          <label>Photo</label>
+          <div class="photo-field">
+            <img class="photo-thumb-preview" id="mealLunchPhotoPreview" style="display:none;">
+            <input type="file" accept="image/*" id="mealLunchPhotoInput">
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:12px;">
+          <label for="lunchCaloriesInput">Calories</label>
+          <input type="number" id="lunchCaloriesInput" min="0" value="0">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="lunchCarbsInput">Carbs (g)</label>
+            <input type="number" id="lunchCarbsInput" min="0" value="0">
+          </div>
+          <div class="field">
+            <label for="lunchProteinInput">Protein (g)</label>
+            <input type="number" id="lunchProteinInput" min="0" value="0">
+          </div>
+          <div class="field">
+            <label for="lunchFatInput">Fat (g)</label>
+            <input type="number" id="lunchFatInput" min="0" value="0">
+          </div>
+        </div>
+      </details>
+
+      <details class="meal-block">
+        <summary>Dinner</summary>
+        <div class="field" style="margin:12px 0;">
+          <label>Photo</label>
+          <div class="photo-field">
+            <img class="photo-thumb-preview" id="mealDinnerPhotoPreview" style="display:none;">
+            <input type="file" accept="image/*" id="mealDinnerPhotoInput">
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:12px;">
+          <label for="dinnerCaloriesInput">Calories</label>
+          <input type="number" id="dinnerCaloriesInput" min="0" value="0">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="dinnerCarbsInput">Carbs (g)</label>
+            <input type="number" id="dinnerCarbsInput" min="0" value="0">
+          </div>
+          <div class="field">
+            <label for="dinnerProteinInput">Protein (g)</label>
+            <input type="number" id="dinnerProteinInput" min="0" value="0">
+          </div>
+          <div class="field">
+            <label for="dinnerFatInput">Fat (g)</label>
+            <input type="number" id="dinnerFatInput" min="0" value="0">
+          </div>
+        </div>
+      </details>
+
+      <details class="meal-block">
+        <summary>Snacks</summary>
+        <div class="field" style="margin:12px 0;">
+          <label>Photo</label>
+          <div class="photo-field">
+            <img class="photo-thumb-preview" id="mealSnacksPhotoPreview" style="display:none;">
+            <input type="file" accept="image/*" id="mealSnacksPhotoInput">
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:12px;">
+          <label for="snacksCaloriesInput">Calories</label>
+          <input type="number" id="snacksCaloriesInput" min="0" value="0">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="snacksCarbsInput">Carbs (g)</label>
+            <input type="number" id="snacksCarbsInput" min="0" value="0">
+          </div>
+          <div class="field">
+            <label for="snacksProteinInput">Protein (g)</label>
+            <input type="number" id="snacksProteinInput" min="0" value="0">
+          </div>
+          <div class="field">
+            <label for="snacksFatInput">Fat (g)</label>
+            <input type="number" id="snacksFatInput" min="0" value="0">
+          </div>
+        </div>
+      </details>
+
+      <div class="field" style="margin-top:16px;">
         <label for="waterInput">Water (L)</label>
         <input type="number" id="waterInput" min="0" step="0.1" value="0">
-      </div>
-      <div class="field">
-        <label>Meal Photo</label>
-        <div class="photo-field">
-          <img class="photo-thumb-preview" id="mealPhotoPreview" style="display:none;">
-          <input type="file" accept="image/*" id="mealPhotoInput">
-        </div>
       </div>
     </div>
 
@@ -871,8 +1014,14 @@ details.goals-panel summary{
     { key:'legsIn', label:'Legs', color:'#CF7F79' }
   ];
 
+  function blankMeal(){
+    return { calories:0, carbsG:0, proteinG:0, fatG:0 };
+  }
   function blankDaily(){
-    return { subtitle:'', date:'', stepsToday:0, stepsNote:'', caloriesToday:0, carbsG:0, proteinG:0, fatG:0, waterL:0 };
+    return {
+      subtitle:'', date:'', stepsToday:0, stepsNote:'', waterL:0,
+      meals: { breakfast: blankMeal(), lunch: blankMeal(), dinner: blankMeal(), snacks: blankMeal() }
+    };
   }
   function blankWeekly(){
     return {
@@ -890,8 +1039,27 @@ details.goals-panel summary{
     daily: blankDaily(),
     weekly: blankWeekly(),
     goals: Object.assign({}, DEFAULT_GOALS),
-    photos: { meal:null, before:null, after:null }
+    photos: { mealBreakfast:null, mealLunch:null, mealDinner:null, mealSnacks:null, before:null, after:null }
   };
+
+  var MEAL_SLOTS = [
+    { key:'breakfast', label:'Breakfast', photoKey:'mealBreakfast' },
+    { key:'lunch', label:'Lunch', photoKey:'mealLunch' },
+    { key:'dinner', label:'Dinner', photoKey:'mealDinner' },
+    { key:'snacks', label:'Snacks', photoKey:'mealSnacks' }
+  ];
+
+  function computeDailyTotals(daily){
+    var totals = { calories:0, carbsG:0, proteinG:0, fatG:0 };
+    MEAL_SLOTS.forEach(function(m){
+      var meal = daily.meals[m.key] || {};
+      totals.calories += num(meal.calories);
+      totals.carbsG += num(meal.carbsG);
+      totals.proteinG += num(meal.proteinG);
+      totals.fatG += num(meal.fatG);
+    });
+    return totals;
+  }
 
   var SLIDE_PHOTO_REQUIREMENTS = { beforeAfter: ['before','after'] };
 
@@ -926,7 +1094,7 @@ details.goals-panel summary{
       } else {
         state.daily = blankDaily();
       }
-      state.photos.meal = null;
+      MEAL_SLOTS.forEach(function(m){ state.photos[m.photoKey] = null; });
     }
   }
 
@@ -1028,25 +1196,42 @@ details.goals-panel summary{
 
   function renderFuelSlide(){
     var d = state.daily, g = state.goals, p = state.photos;
-    var carbsPct = pct(num(d.carbsG), num(g.carbsGoal));
-    var proteinPct = pct(num(d.proteinG), num(g.proteinGoal));
-    var fatPct = pct(num(d.fatG), num(g.fatGoal));
+    var totals = computeDailyTotals(d);
+    var carbsPct = pct(totals.carbsG, num(g.carbsGoal));
+    var proteinPct = pct(totals.proteinG, num(g.proteinGoal));
+    var fatPct = pct(totals.fatG, num(g.fatGoal));
     var waterPct = pct(num(d.waterL), num(g.waterGoal));
-    var thumb = p.meal
-      ? '<img class="fuel-thumb" src="' + p.meal + '">'
-      : '<div class="fuel-thumb"></div>';
+
+    var mealRows = MEAL_SLOTS.map(function(m){
+      var photo = p[m.photoKey];
+      if(!photo) return '';
+      var meal = d.meals[m.key] || {};
+      return '<div class="meal-row">' +
+        '<img class="meal-photo" src="' + photo + '">' +
+        '<div class="meal-info">' +
+          '<div class="meal-name">' + esc(m.label) + '</div>' +
+          '<div class="meal-macros">' +
+            '<span class="meal-macro-stat"><strong>' + num(meal.calories) + '</strong> kcal</span>' +
+            '<span class="meal-macro-stat"><strong>' + num(meal.carbsG) + 'g</strong> carbs</span>' +
+            '<span class="meal-macro-stat"><strong>' + num(meal.proteinG) + 'g</strong> protein</span>' +
+            '<span class="meal-macro-stat"><strong>' + num(meal.fatG) + 'g</strong> fat</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
     return '' +
       '<div class="slide slide-fuel">' +
         '<div class="pill">FUEL</div>' +
-        thumb +
         '<div class="slide-body">' +
-          '<div class="fuel-cal">' + num(d.caloriesToday).toLocaleString() + '</div>' +
+          '<div class="fuel-cal">' + totals.calories.toLocaleString() + '</div>' +
           '<div class="fuel-cal-label">kcal today</div>' +
           '<div class="fuel-bars">' +
-            '<div class="fuel-bar-row"><span class="bar-name">Carbs</span><div class="bar-track"><div class="bar-fill" style="width:' + carbsPct + '%;background:var(--bar-carbs)"></div></div><span class="bar-val">' + num(d.carbsG) + 'g</span></div>' +
-            '<div class="fuel-bar-row"><span class="bar-name">Protein</span><div class="bar-track"><div class="bar-fill" style="width:' + proteinPct + '%;background:var(--bar-protein)"></div></div><span class="bar-val">' + num(d.proteinG) + 'g</span></div>' +
-            '<div class="fuel-bar-row"><span class="bar-name">Fat</span><div class="bar-track"><div class="bar-fill" style="width:' + fatPct + '%;background:var(--bar-fat)"></div></div><span class="bar-val">' + num(d.fatG) + 'g</span></div>' +
+            '<div class="fuel-bar-row"><span class="bar-name">Carbs</span><div class="bar-track"><div class="bar-fill" style="width:' + carbsPct + '%;background:var(--bar-carbs)"></div></div><span class="bar-val">' + totals.carbsG + 'g</span></div>' +
+            '<div class="fuel-bar-row"><span class="bar-name">Protein</span><div class="bar-track"><div class="bar-fill" style="width:' + proteinPct + '%;background:var(--bar-protein)"></div></div><span class="bar-val">' + totals.proteinG + 'g</span></div>' +
+            '<div class="fuel-bar-row"><span class="bar-name">Fat</span><div class="bar-track"><div class="bar-fill" style="width:' + fatPct + '%;background:var(--bar-fat)"></div></div><span class="bar-val">' + totals.fatG + 'g</span></div>' +
           '</div>' +
+          '<div class="meal-table">' + mealRows + '</div>' +
         '</div>' +
         '<div class="fuel-water-card">' +
           '<div class="bar-track"><div class="bar-fill" style="width:' + waterPct + '%;background:var(--bar-water)"></div></div>' +
@@ -1554,10 +1739,13 @@ details.goals-panel summary{
     document.getElementById('dateInput').value = d.date;
     document.getElementById('stepsTodayInput').value = d.stepsToday;
     document.getElementById('stepsNoteInput').value = d.stepsNote;
-    document.getElementById('caloriesInput').value = d.caloriesToday;
-    document.getElementById('carbsInput').value = d.carbsG;
-    document.getElementById('proteinInput').value = d.proteinG;
-    document.getElementById('fatInput').value = d.fatG;
+    MEAL_SLOTS.forEach(function(m){
+      var meal = d.meals[m.key];
+      document.getElementById(m.key + 'CaloriesInput').value = meal.calories;
+      document.getElementById(m.key + 'CarbsInput').value = meal.carbsG;
+      document.getElementById(m.key + 'ProteinInput').value = meal.proteinG;
+      document.getElementById(m.key + 'FatInput').value = meal.fatG;
+    });
     document.getElementById('waterInput').value = d.waterL;
 
     var w = state.weekly;
@@ -1589,7 +1777,9 @@ details.goals-panel summary{
     document.getElementById('goalWorkoutsInput').value = g.weeklyWorkoutsGoal;
     document.getElementById('goalCardioInput').value = g.weeklyCardioGoal;
 
-    updatePhotoPreview('mealPhotoPreview', state.photos.meal);
+    MEAL_SLOTS.forEach(function(m){
+      updatePhotoPreview(m.photoKey + 'PhotoPreview', state.photos[m.photoKey]);
+    });
     updatePhotoPreview('beforePhotoPreview', state.photos.before);
     updatePhotoPreview('afterPhotoPreview', state.photos.after);
 
@@ -1606,6 +1796,12 @@ details.goals-panel summary{
   function bindDailyField(inputId, field){
     document.getElementById(inputId).addEventListener('input', function(e){
       state.daily[field] = e.target.value;
+      renderPreview();
+    });
+  }
+  function bindMealField(inputId, mealKey, field){
+    document.getElementById(inputId).addEventListener('input', function(e){
+      state.daily.meals[mealKey][field] = e.target.value;
       renderPreview();
     });
   }
@@ -1664,10 +1860,12 @@ details.goals-panel summary{
     bindDailyField('dateInput', 'date');
     bindDailyField('stepsTodayInput', 'stepsToday');
     bindDailyField('stepsNoteInput', 'stepsNote');
-    bindDailyField('caloriesInput', 'caloriesToday');
-    bindDailyField('carbsInput', 'carbsG');
-    bindDailyField('proteinInput', 'proteinG');
-    bindDailyField('fatInput', 'fatG');
+    MEAL_SLOTS.forEach(function(m){
+      bindMealField(m.key + 'CaloriesInput', m.key, 'calories');
+      bindMealField(m.key + 'CarbsInput', m.key, 'carbsG');
+      bindMealField(m.key + 'ProteinInput', m.key, 'proteinG');
+      bindMealField(m.key + 'FatInput', m.key, 'fatG');
+    });
     bindDailyField('waterInput', 'waterL');
 
     bindWeeklyField('dateRangeInput', 'dateRange');
@@ -1697,7 +1895,9 @@ details.goals-panel summary{
     bindGoalField('goalWorkoutsInput', 'weeklyWorkoutsGoal');
     bindGoalField('goalCardioInput', 'weeklyCardioGoal');
 
-    bindPhotoField('mealPhotoInput', 'mealPhotoPreview', 'meal');
+    MEAL_SLOTS.forEach(function(m){
+      bindPhotoField(m.photoKey + 'PhotoInput', m.photoKey + 'PhotoPreview', m.photoKey);
+    });
     bindPhotoField('beforePhotoInput', 'beforePhotoPreview', 'before');
     bindPhotoField('afterPhotoInput', 'afterPhotoPreview', 'after');
 
