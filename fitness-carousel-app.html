@@ -38,9 +38,14 @@
   --badge-duration:#FF4D5E;
   --track-alt:#2A2F34;
   --accent-lime:#D4FF3F;
-  --app-ink:#3D2F35;
-  --app-ink-soft:#8C7982;
-  --app-accent:#E5266F;
+  --app-ink:#F5F3EF;
+  --app-ink-soft:#9A9DA3;
+  --app-accent:#D4FF3F;
+  --app-accent-ink:#101214;
+  --app-bg:#0B0D0E;
+  --app-panel:#14171A;
+  --app-surface:#1B1F22;
+  --app-border:#2A2F34;
 }
 
 * { box-sizing: border-box; }
@@ -49,7 +54,7 @@ body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   color:var(--app-ink);
-  background:#F4EFEC;
+  background:var(--app-bg);
 }
 
 #app{
@@ -67,8 +72,8 @@ body{
   overflow-y:auto;
 }
 .controls{
-  background:#fff;
-  border-right:1px solid #E8E1DC;
+  background:var(--app-panel);
+  border-right:1px solid var(--app-border);
 }
 h1{
   font-size:20px;
@@ -104,9 +109,9 @@ textarea{
   font-family:inherit;
   font-size:14px;
   padding:9px 11px;
-  border:1px solid #DED5CE;
+  border:1px solid var(--app-border);
   border-radius:8px;
-  background:#FBF9F7;
+  background:var(--app-surface);
   color:var(--app-ink);
   width:100%;
 }
@@ -119,7 +124,7 @@ input:focus, textarea:focus{
   display:flex;
   gap:6px;
   margin-bottom:20px;
-  background:#F1EBE7;
+  background:var(--app-surface);
   padding:4px;
   border-radius:10px;
 }
@@ -136,12 +141,12 @@ input:focus, textarea:focus{
   white-space:nowrap;
 }
 .tab-btn.active{
-  background:#fff;
+  background:var(--app-panel);
   color:var(--app-accent);
-  box-shadow:0 1px 3px rgba(0,0,0,0.12);
+  box-shadow:0 0 0 1px var(--app-border);
 }
 .section{
-  border-top:1px solid #EEE7E2;
+  border-top:1px solid var(--app-border);
   padding-top:16px;
   margin-top:16px;
 }
@@ -160,7 +165,7 @@ input:focus, textarea:focus{
 }
 .photo-thumb-preview{
   width:48px;height:48px;border-radius:8px;object-fit:cover;
-  background:#EEE7E2;border:1px solid #DED5CE;
+  background:var(--app-surface);border:1px solid var(--app-border);
 }
 .btn{
   font-family:inherit;
@@ -171,8 +176,8 @@ input:focus, textarea:focus{
   padding:10px 16px;
   cursor:pointer;
 }
-.btn-primary{ background:var(--app-accent); color:#fff; }
-.btn-secondary{ background:#EEE7E2; color:var(--app-ink); }
+.btn-primary{ background:var(--app-accent); color:var(--app-accent-ink); }
+.btn-secondary{ background:var(--app-surface); color:var(--app-ink); border:1px solid var(--app-border); }
 .btn-small{ font-size:12px; padding:6px 10px; }
 .btn:disabled{ opacity:0.5; cursor:not-allowed; }
 .btn-row{ display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; }
@@ -190,11 +195,11 @@ input:focus, textarea:focus{
   line-height:1.4;
 }
 .meal-block{
-  border:1px solid #EEE7E2;
+  border:1px solid var(--app-border);
   border-radius:10px;
   padding:12px 14px;
   margin-bottom:12px;
-  background:#FBF9F7;
+  background:var(--app-surface);
 }
 .meal-block summary{
   cursor:pointer;
@@ -203,11 +208,11 @@ input:focus, textarea:focus{
   color:var(--app-ink);
 }
 details.goals-panel{
-  border:1px solid #EEE7E2;
+  border:1px solid var(--app-border);
   border-radius:10px;
   padding:12px 14px;
   margin-top:20px;
-  background:#FBF9F7;
+  background:var(--app-surface);
 }
 details.goals-panel summary{
   cursor:pointer;
@@ -223,7 +228,7 @@ details.goals-panel summary{
 }
 
 /* ---------- Preview panel ---------- */
-.preview-panel{ background:#F4EFEC; }
+.preview-panel{ background:var(--app-bg); }
 .preview-header{
   display:flex;
   justify-content:space-between;
@@ -260,8 +265,8 @@ details.goals-panel summary{
   height:340px;
   overflow:hidden;
   border-radius:10px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.14);
-  background:#fff;
+  box-shadow:0 0 0 1px var(--app-border);
+  background:var(--app-surface);
 }
 .slide-preview-inner{
   width:1080px;
@@ -666,18 +671,18 @@ details.goals-panel summary{
 .trend-dashboard{ width:100%; }
 .trend-empty{ font-size:14px; color:var(--app-ink-soft); }
 .trend-summary-grid{ display:flex; flex-wrap:wrap; gap:16px; margin-bottom:24px; }
-.trend-card{ background:#fff; border:1px solid #E8E1DC; border-radius:12px; padding:16px 20px; min-width:130px; }
+.trend-card{ background:var(--app-panel); border:1px solid var(--app-border); border-radius:12px; padding:16px 20px; min-width:130px; }
 .trend-card-value{ font-size:22px; font-weight:800; color:var(--app-ink); }
 .trend-card-label{ font-size:12px; color:var(--app-ink-soft); margin-top:4px; text-transform:uppercase; letter-spacing:0.03em; }
 .trend-chart-row{ display:flex; gap:20px; flex-wrap:wrap; margin-bottom:24px; }
-.trend-chart-card{ background:#fff; border:1px solid #E8E1DC; border-radius:12px; padding:16px 20px; flex:1; min-width:340px; }
+.trend-chart-card{ background:var(--app-panel); border:1px solid var(--app-border); border-radius:12px; padding:16px 20px; flex:1; min-width:340px; }
 .trend-chart-title{ font-size:13px; font-weight:700; color:var(--app-ink); margin-bottom:8px; }
 .trend-legend{ display:flex; flex-wrap:wrap; gap:14px; margin-top:4px; }
 .trend-legend-item{ display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--app-ink-soft); }
 .trend-legend-dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
-.trend-table-wrap{ background:#fff; border:1px solid #E8E1DC; border-radius:12px; overflow-x:auto; }
+.trend-table-wrap{ background:var(--app-panel); border:1px solid var(--app-border); border-radius:12px; overflow-x:auto; }
 .trend-table{ width:100%; border-collapse:collapse; font-size:13px; }
-.trend-table th, .trend-table td{ padding:10px 14px; text-align:left; border-bottom:1px solid #EEE7E2; white-space:nowrap; }
+.trend-table th, .trend-table td{ padding:10px 14px; text-align:left; border-bottom:1px solid var(--app-border); white-space:nowrap; }
 .trend-table tr:last-child td{ border-bottom:none; }
 .trend-table th{ color:var(--app-ink-soft); font-size:11px; text-transform:uppercase; letter-spacing:0.03em; }
 
@@ -1474,10 +1479,10 @@ details.goals-panel summary{
 
     var pathD = points.map(function(p, i){ return (i === 0 ? 'M' : 'L') + xPos(p.x).toFixed(1) + ' ' + yPos(p.y).toFixed(1); }).join(' ');
     var dots = points.map(function(p){ return '<circle cx="' + xPos(p.x).toFixed(1) + '" cy="' + yPos(p.y).toFixed(1) + '" r="4" fill="' + opts.color + '"/>'; }).join('');
-    var xLabels = points.map(function(p){ return '<text x="' + xPos(p.x).toFixed(1) + '" y="' + (h - 8) + '" font-size="11" text-anchor="middle" fill="#8C7982">W' + p.x + '</text>'; }).join('');
+    var xLabels = points.map(function(p){ return '<text x="' + xPos(p.x).toFixed(1) + '" y="' + (h - 8) + '" font-size="11" text-anchor="middle" fill="#9A9DA3">W' + p.x + '</text>'; }).join('');
     var goalLine = opts.goalY != null
-      ? '<line x1="' + padL + '" y1="' + yPos(opts.goalY).toFixed(1) + '" x2="' + (w - padR) + '" y2="' + yPos(opts.goalY).toFixed(1) + '" stroke="#E5266F" stroke-width="1.5" stroke-dasharray="4 4"/>' +
-        '<text x="' + (w - padR) + '" y="' + (yPos(opts.goalY) - 6).toFixed(1) + '" font-size="11" text-anchor="end" fill="#E5266F">Goal</text>'
+      ? '<line x1="' + padL + '" y1="' + yPos(opts.goalY).toFixed(1) + '" x2="' + (w - padR) + '" y2="' + yPos(opts.goalY).toFixed(1) + '" stroke="#D4FF3F" stroke-width="1.5" stroke-dasharray="4 4"/>' +
+        '<text x="' + (w - padR) + '" y="' + (yPos(opts.goalY) - 6).toFixed(1) + '" font-size="11" text-anchor="end" fill="#D4FF3F">Goal</text>'
       : '';
 
     return '<div class="trend-chart-title">' + esc(opts.label) + '</div>' +
@@ -1499,7 +1504,7 @@ details.goals-panel summary{
       var barH = maxY ? (p.y / maxY) * (h - padT - padB) : 0;
       var y = h - padB - barH;
       return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + barH.toFixed(1) + '" rx="4" fill="' + opts.color + '"/>' +
-        '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (h - 8) + '" font-size="11" text-anchor="middle" fill="#8C7982">W' + p.x + '</text>';
+        '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (h - 8) + '" font-size="11" text-anchor="middle" fill="#9A9DA3">W' + p.x + '</text>';
     }).join('');
     return '<div class="trend-chart-title">' + esc(opts.label) + '</div>' +
       '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '">' + bars + '</svg>';
@@ -1519,7 +1524,7 @@ details.goals-panel summary{
     function xPos(x){ return maxX === minX ? padL : padL + ((x - minX) / (maxX - minX)) * (w - padL - padR); }
     function yPos(y){ return padT + (1 - (y - minY) / (maxY - minY)) * (h - padT - padB); }
 
-    var xLabels = series[0].points.map(function(p){ return '<text x="' + xPos(p.x).toFixed(1) + '" y="' + (h - 26) + '" font-size="11" text-anchor="middle" fill="#8C7982">W' + p.x + '</text>'; }).join('');
+    var xLabels = series[0].points.map(function(p){ return '<text x="' + xPos(p.x).toFixed(1) + '" y="' + (h - 26) + '" font-size="11" text-anchor="middle" fill="#9A9DA3">W' + p.x + '</text>'; }).join('');
 
     var lines = series.map(function(s){
       var pathD = s.points.map(function(p, i){ return (i === 0 ? 'M' : 'L') + xPos(p.x).toFixed(1) + ' ' + yPos(p.y).toFixed(1); }).join(' ');
