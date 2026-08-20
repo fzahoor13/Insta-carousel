@@ -207,6 +207,35 @@ input:focus, textarea:focus{
   font-weight:700;
   color:var(--app-ink);
 }
+.collage-clip-row{
+  border:1px solid var(--app-border);
+  border-radius:10px;
+  padding:12px 14px;
+  margin-bottom:12px;
+  background:var(--app-surface);
+}
+.collage-clip-row .clip-row-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.collage-clip-row .clip-row-title{
+  font-size:12px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.03em;
+  color:var(--app-ink-soft);
+}
+.collage-clip-row .clip-remove-btn{
+  background:none;
+  border:none;
+  color:var(--app-ink-soft);
+  font-size:12px;
+  cursor:pointer;
+  text-decoration:underline;
+  padding:0;
+}
 details.goals-panel{
   border:1px solid var(--app-border);
   border-radius:10px;
@@ -667,6 +696,50 @@ details.goals-panel summary{
 .stats-grid .stat-label{ font-size:22px; }
 .stats-grid .stat-delta{ font-size:17px; }
 
+/* Video Collage */
+.slide-collage{ background:#000; padding:0; }
+.slide-collage .pill{ top:24px; left:24px; z-index:2; }
+.collage-grid{
+  width:100%;
+  height:100%;
+  display:grid;
+  gap:6px;
+  background:#000;
+}
+.collage-cell{
+  position:relative;
+  overflow:hidden;
+  background:var(--track-alt);
+}
+.collage-cell img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.collage-cell-label{
+  position:absolute;
+  left:14px;
+  bottom:14px;
+  background:var(--accent-lime);
+  color:#101214;
+  font-weight:700;
+  font-size:18px;
+  padding:8px 18px;
+  border-radius:999px;
+}
+.collage-empty{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--text-muted);
+  font-size:24px;
+  text-align:center;
+  padding:88px;
+}
+
 /* ---------- Progress trend dashboard (internal only, not exported) ---------- */
 .trend-dashboard{ width:100%; }
 .trend-empty{ font-size:14px; color:var(--app-ink-soft); }
@@ -714,6 +787,7 @@ details.goals-panel summary{
       <button class="tab-btn active" data-mode="daily">Daily Post</button>
       <button class="tab-btn" data-mode="rest">Rest Day Log</button>
       <button class="tab-btn" data-mode="recap">Weekly Recap</button>
+      <button class="tab-btn" data-mode="collage">Collage</button>
       <button class="tab-btn" data-mode="progress">Progress</button>
     </div>
 
@@ -977,6 +1051,16 @@ details.goals-panel summary{
       </div>
     </div>
 
+    <!-- Video Collage section -->
+    <div class="section hidden" id="section-collage">
+      <h2>Video Collage</h2>
+      <p class="section-hint">Upload your workout clips below — a thumbnail is pulled from each automatically and arranged into a grid that adapts to however many you add. Nothing is uploaded anywhere; it all happens in your browser.</p>
+      <div id="collageClipsList"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary btn-small" id="addClipBtn">+ Add Clip</button>
+      </div>
+    </div>
+
     <details class="goals-panel">
       <summary>Goals Settings</summary>
       <div class="goals-grid">
@@ -1083,8 +1167,15 @@ details.goals-panel summary{
     daily: blankDaily(),
     weekly: blankWeekly(),
     goals: Object.assign({}, DEFAULT_GOALS),
-    photos: { mealBreakfast:null, mealLunch:null, mealDinner:null, mealSnacks:null, before:null, after:null }
+    photos: { mealBreakfast:null, mealLunch:null, mealDinner:null, mealSnacks:null, before:null, after:null },
+    collageClips: [
+      { thumbnail: null, label: '' },
+      { thumbnail: null, label: '' },
+      { thumbnail: null, label: '' },
+      { thumbnail: null, label: '' }
+    ]
   };
+  var MAX_COLLAGE_CLIPS = 9;
 
   var MEAL_SLOTS = [
     { key:'breakfast', label:'Breakfast', photoKey:'mealBreakfast' },
@@ -1120,7 +1211,7 @@ details.goals-panel summary{
   }
 
   function loadEntryForCurrentSelection(){
-    if(state.mode === 'progress'){
+    if(state.mode === 'progress' || state.mode === 'collage'){
       return;
     }
     if(state.mode === 'recap'){
@@ -1417,6 +1508,25 @@ details.goals-panel summary{
       '</div>';
   }
 
+  function renderCollageSlide(){
+    var clips = state.collageClips.filter(function(c){ return c.thumbnail; });
+    if(!clips.length){
+      return '<div class="slide slide-collage"><div class="pill">CLIPS</div><div class="collage-empty">Add clips on the left — a preview grid will build here automatically.</div></div>';
+    }
+    var cols = Math.ceil(Math.sqrt(clips.length));
+    var cells = clips.map(function(c){
+      return '<div class="collage-cell">' +
+        '<img src="' + c.thumbnail + '">' +
+        (c.label ? '<div class="collage-cell-label">' + esc(c.label) + '</div>' : '') +
+      '</div>';
+    }).join('');
+    return '' +
+      '<div class="slide slide-collage">' +
+        '<div class="pill">CLIPS</div>' +
+        '<div class="collage-grid" style="grid-template-columns:repeat(' + cols + ', 1fr);">' + cells + '</div>' +
+      '</div>';
+  }
+
   function currentSlideList(){
     if(state.mode === 'daily'){
       return [
@@ -1432,6 +1542,11 @@ details.goals-panel summary{
         { key:'beforeAfter', label:'3. Before / After', filenameSuffix:'03-before-after', render: renderBeforeAfterSlide },
         { key:'wins', label:'4. Wins & Challenges', filenameSuffix:'04-wins-challenges', render: renderWinsChallengesSlide },
         { key:'weeklyStats', label:'5. Weekly Stats', filenameSuffix:'05-weekly-stats', render: renderWeeklyStatsSlide }
+      ];
+    }
+    if(state.mode === 'collage'){
+      return [
+        { key:'collage', label:'Video Collage', filenameSuffix:'collage', render: renderCollageSlide }
       ];
     }
     return [];
@@ -1637,8 +1752,13 @@ details.goals-panel summary{
       renderProgressDashboard();
       return;
     }
-    downloadAllBtn.classList.remove('hidden');
-    previewTitle.textContent = state.mode === 'daily' ? 'Daily Post Preview' : 'Weekly Recap Preview';
+    if(state.mode === 'collage'){
+      downloadAllBtn.classList.add('hidden');
+      previewTitle.textContent = 'Video Collage Preview';
+    } else {
+      downloadAllBtn.classList.remove('hidden');
+      previewTitle.textContent = state.mode === 'daily' ? 'Daily Post Preview' : 'Weekly Recap Preview';
+    }
 
     var slides = currentSlideList();
     slides.forEach(function(slide){
@@ -1686,6 +1806,40 @@ details.goals-panel summary{
     });
   }
 
+  function extractVideoThumbnail(file){
+    var work = new Promise(function(resolve, reject){
+      var video = document.createElement('video');
+      video.preload = 'metadata';
+      video.muted = true;
+      video.playsInline = true;
+      var url = URL.createObjectURL(file);
+      video.src = url;
+      video.addEventListener('loadeddata', function(){
+        try{
+          video.currentTime = Math.min(0.3, (video.duration || 1) / 2);
+        }catch(e){
+          finish();
+        }
+      });
+      video.addEventListener('seeked', finish);
+      video.addEventListener('error', function(){
+        URL.revokeObjectURL(url);
+        reject(new Error('Could not read that video file.'));
+      });
+      function finish(){
+        var canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 640;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        URL.revokeObjectURL(url);
+        resolve(dataUrl);
+      }
+    });
+    return withTimeout(work, 15000, 'Could not read that video — try a different file (mp4 recommended).');
+  }
+
   function captureSlideCanvas(html){
     var stage = document.getElementById('exportStage');
     stage.innerHTML = html;
@@ -1718,9 +1872,8 @@ details.goals-panel summary{
   }
 
   function baseFilenamePrefix(){
-    return state.mode === 'recap'
-      ? 'week' + state.week + '-recap'
-      : 'week' + state.week + '-day' + state.day;
+    if(state.mode === 'recap') return 'week' + state.week + '-recap';
+    return 'week' + state.week + '-day' + state.day;
   }
 
   function downloadSingleSlide(slide){
@@ -1786,6 +1939,90 @@ details.goals-panel summary{
 
   /* ---------------- form <-> state binding ---------------- */
 
+  function addCollageClip(){
+    if(state.collageClips.length >= MAX_COLLAGE_CLIPS) return;
+    state.collageClips.push({ thumbnail: null, label: '' });
+    renderCollageForm();
+    renderPreview();
+  }
+
+  function removeCollageClip(index){
+    state.collageClips.splice(index, 1);
+    renderCollageForm();
+    renderPreview();
+  }
+
+  function renderCollageForm(){
+    var container = document.getElementById('collageClipsList');
+    var addBtn = document.getElementById('addClipBtn');
+    container.innerHTML = '';
+
+    state.collageClips.forEach(function(clip, i){
+      var row = document.createElement('div');
+      row.className = 'collage-clip-row';
+
+      var head = document.createElement('div');
+      head.className = 'clip-row-head';
+      var title = document.createElement('span');
+      title.className = 'clip-row-title';
+      title.textContent = 'Clip ' + (i + 1);
+      head.appendChild(title);
+      if(state.collageClips.length > 1){
+        var removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'clip-remove-btn';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', function(){ removeCollageClip(i); });
+        head.appendChild(removeBtn);
+      }
+      row.appendChild(head);
+
+      var photoField = document.createElement('div');
+      photoField.className = 'photo-field';
+      var thumb = document.createElement('img');
+      thumb.className = 'photo-thumb-preview';
+      if(clip.thumbnail){
+        thumb.src = clip.thumbnail;
+      } else {
+        thumb.style.display = 'none';
+      }
+      photoField.appendChild(thumb);
+      var fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'video/*';
+      fileInput.addEventListener('change', function(e){
+        var file = e.target.files[0];
+        if(!file) return;
+        showStatus('exportStatus', 'Extracting thumbnail for clip ' + (i + 1) + '…');
+        extractVideoThumbnail(file).then(function(dataUrl){
+          state.collageClips[i].thumbnail = dataUrl;
+          renderCollageForm();
+          renderPreview();
+          showStatus('exportStatus', '');
+        }).catch(function(err){
+          showStatus('exportStatus', err.message);
+        });
+      });
+      photoField.appendChild(fileInput);
+      row.appendChild(photoField);
+
+      var labelInput = document.createElement('input');
+      labelInput.type = 'text';
+      labelInput.placeholder = 'Label (optional)';
+      labelInput.value = clip.label;
+      labelInput.style.marginTop = '8px';
+      labelInput.addEventListener('input', function(e){
+        state.collageClips[i].label = e.target.value;
+        renderPreview();
+      });
+      row.appendChild(labelInput);
+
+      container.appendChild(row);
+    });
+
+    addBtn.classList.toggle('hidden', state.collageClips.length >= MAX_COLLAGE_CLIPS);
+  }
+
   function populateFormFromState(){
     document.getElementById('weekInput').value = state.week;
     document.getElementById('dayInput').value = state.day;
@@ -1795,12 +2032,17 @@ details.goals-panel summary{
     });
 
     document.getElementById('section-title').classList.toggle('hidden', state.mode !== 'daily');
-    document.getElementById('section-steps').classList.toggle('hidden', state.mode === 'recap' || state.mode === 'progress');
-    document.getElementById('section-fuel').classList.toggle('hidden', state.mode === 'recap' || state.mode === 'progress');
+    document.getElementById('section-steps').classList.toggle('hidden', state.mode === 'recap' || state.mode === 'progress' || state.mode === 'collage');
+    document.getElementById('section-fuel').classList.toggle('hidden', state.mode === 'recap' || state.mode === 'progress' || state.mode === 'collage');
     document.getElementById('section-recap').classList.toggle('hidden', state.mode !== 'recap');
-    document.getElementById('dayFieldWrap').classList.toggle('hidden', state.mode === 'recap' || state.mode === 'progress');
-    document.getElementById('weekFieldWrap').classList.toggle('hidden', state.mode === 'progress');
-    document.getElementById('saveRow').classList.toggle('hidden', state.mode === 'progress');
+    document.getElementById('section-collage').classList.toggle('hidden', state.mode !== 'collage');
+    document.getElementById('dayFieldWrap').classList.toggle('hidden', state.mode === 'recap' || state.mode === 'progress' || state.mode === 'collage');
+    document.getElementById('weekFieldWrap').classList.toggle('hidden', state.mode === 'progress' || state.mode === 'collage');
+    document.getElementById('saveRow').classList.toggle('hidden', state.mode === 'progress' || state.mode === 'collage');
+
+    if(state.mode === 'collage'){
+      renderCollageForm();
+    }
 
     var d = state.daily;
     document.getElementById('subtitleInput').value = d.subtitle;
@@ -1972,6 +2214,7 @@ details.goals-panel summary{
     document.getElementById('saveBtn').addEventListener('click', saveCurrentEntry);
     document.getElementById('autofillBtn').addEventListener('click', autofillFromWeek);
     document.getElementById('downloadAllBtn').addEventListener('click', downloadAllSlides);
+    document.getElementById('addClipBtn').addEventListener('click', addCollageClip);
   }
 
   function init(){
