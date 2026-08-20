@@ -344,27 +344,30 @@ details.goals-panel summary{
   position:relative;
 }
 
-/* Title */
-.slide-title{ background:var(--bg-cream); }
+/* Title — bright pastel cover treatment, scoped to this slide only */
+.slide-title{ background:linear-gradient(150deg, #FFC2D1 0%, #FFD3B0 100%); }
 .slide-title .slide-body{ justify-content:center; }
+.slide-title .pill{ background:#FF3D7A; color:#fff; }
+.slide-title .deco-circle--coral{ background:radial-gradient(circle, #FF8A3D 0%, rgba(255,138,61,0) 70%); opacity:0.55; }
+.slide-title .deco-circle--sage{ background:radial-gradient(circle, #FF3D7A 0%, rgba(255,61,122,0) 70%); opacity:0.35; }
 .slide-title__day{
   font-family:'Poppins',sans-serif;
   font-weight:800;
   font-size:180px;
-  color:var(--heading-coral);
+  color:#B3164B;
   line-height:1;
   margin:0 0 24px;
 }
 .slide-title__subtitle{
   font-style:italic;
   font-size:32px;
-  color:var(--text-dark);
+  color:#5C3A40;
   margin:0 0 16px;
   font-weight:500;
 }
 .slide-title__date{
   font-size:24px;
-  color:var(--text-muted);
+  color:#8A5B62;
 }
 
 /* Steps */
