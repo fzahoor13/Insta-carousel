@@ -266,6 +266,36 @@ details.goals-panel summary{
   flex-wrap:wrap;
   margin-bottom:20px;
 }
+.preview-header-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.size-toggle{
+  display:flex;
+  gap:4px;
+  background:var(--app-surface);
+  border:1px solid var(--app-border);
+  padding:4px;
+  border-radius:8px;
+}
+.size-toggle-btn{
+  border:none;
+  background:transparent;
+  padding:8px 14px;
+  font-size:12px;
+  font-weight:700;
+  color:var(--app-ink-soft);
+  border-radius:6px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.size-toggle-btn.active{
+  background:var(--app-panel);
+  color:var(--app-accent);
+  box-shadow:0 0 0 1px var(--app-border);
+}
 .preview-grid{
   display:flex;
   flex-wrap:wrap;
@@ -1115,7 +1145,13 @@ details.goals-panel summary{
   <div class="panel preview-panel">
     <div class="preview-header">
       <strong id="previewTitle">Daily Post Preview</strong>
-      <button class="btn btn-primary" id="downloadAllBtn">Download All (ZIP)</button>
+      <div class="preview-header-actions">
+        <div class="size-toggle" id="sizeToggle">
+          <button type="button" class="size-toggle-btn active" data-size="post">Post 1:1</button>
+          <button type="button" class="size-toggle-btn" data-size="story">Story/Reel 9:16</button>
+        </div>
+        <button class="btn btn-primary" id="downloadAllBtn">Download All (ZIP)</button>
+      </div>
     </div>
     <div class="status-msg" id="exportStatus"></div>
     <div class="preview-grid" id="previewGrid"></div>
@@ -1167,6 +1203,7 @@ details.goals-panel summary{
     week: 1,
     day: 1,
     mode: 'daily',
+    exportSize: 'post',
     daily: blankDaily(),
     weekly: blankWeekly(),
     goals: Object.assign({}, DEFAULT_GOALS),
@@ -1742,19 +1779,23 @@ details.goals-panel summary{
     var grid = document.getElementById('previewGrid');
     var previewTitle = document.getElementById('previewTitle');
     var downloadAllBtn = document.getElementById('downloadAllBtn');
+    var sizeToggle = document.getElementById('sizeToggle');
     grid.innerHTML = '';
 
     if(state.mode === 'rest'){
       previewTitle.textContent = 'Rest Day Log — nothing to export';
       downloadAllBtn.classList.add('hidden');
+      sizeToggle.classList.add('hidden');
       return;
     }
     if(state.mode === 'progress'){
       previewTitle.textContent = '8-Week Progress — internal tracker, not exported';
       downloadAllBtn.classList.add('hidden');
+      sizeToggle.classList.add('hidden');
       renderProgressDashboard();
       return;
     }
+    sizeToggle.classList.remove('hidden');
     if(state.mode === 'collage'){
       downloadAllBtn.classList.add('hidden');
       previewTitle.textContent = 'Video Collage Preview';
@@ -1762,6 +1803,10 @@ details.goals-panel summary{
       downloadAllBtn.classList.remove('hidden');
       previewTitle.textContent = state.mode === 'daily' ? 'Daily Post Preview' : 'Weekly Recap Preview';
     }
+
+    var dims = exportDims();
+    var previewScale = 340 / dims.width;
+    var previewHeight = Math.round(dims.height * previewScale);
 
     var slides = currentSlideList();
     slides.forEach(function(slide){
@@ -1783,9 +1828,13 @@ details.goals-panel summary{
 
       var wrap = document.createElement('div');
       wrap.className = 'slide-preview-wrap';
+      wrap.style.height = previewHeight + 'px';
       var inner = document.createElement('div');
       inner.className = 'slide-preview-inner';
-      inner.innerHTML = slide.render();
+      inner.style.width = dims.width + 'px';
+      inner.style.height = dims.height + 'px';
+      inner.style.transform = 'scale(' + previewScale + ')';
+      inner.innerHTML = wrapForExportSize(slide.render());
       wrap.appendChild(inner);
       card.appendChild(wrap);
 
@@ -1850,12 +1899,24 @@ details.goals-panel summary{
     return withTimeout(work, 15000, 'Could not read that video — try a different file (mp4 recommended).');
   }
 
+  function exportDims(){
+    return state.exportSize === 'story' ? { width: 1080, height: 1920 } : { width: 1080, height: 1080 };
+  }
+
+  function wrapForExportSize(html){
+    if(state.exportSize !== 'story') return html;
+    return '<div style="width:1080px;height:1920px;background:#0B0D0E;display:flex;align-items:center;justify-content:center;box-sizing:border-box;">' +
+      '<div style="width:1080px;height:1080px;flex-shrink:0;">' + html + '</div>' +
+    '</div>';
+  }
+
   function captureSlideCanvas(html){
     var stage = document.getElementById('exportStage');
-    stage.innerHTML = html;
+    stage.innerHTML = wrapForExportSize(html);
     var node = stage.firstElementChild;
+    var dims = exportDims();
     var work = document.fonts.ready.then(function(){
-      return html2canvas(node, { scale: 1, width: 1080, height: 1080, backgroundColor: null });
+      return html2canvas(node, { scale: 1, width: dims.width, height: dims.height, backgroundColor: null });
     });
     return withTimeout(work, 20000, 'Rendering timed out — check your connection and try again.')
       .then(function(canvas){
@@ -1882,8 +1943,8 @@ details.goals-panel summary{
   }
 
   function baseFilenamePrefix(){
-    if(state.mode === 'recap') return 'week' + state.week + '-recap';
-    return 'week' + state.week + '-day' + state.day;
+    var prefix = state.mode === 'recap' ? 'week' + state.week + '-recap' : 'week' + state.week + '-day' + state.day;
+    return state.exportSize === 'story' ? prefix + '-story' : prefix;
   }
 
   function downloadSingleSlide(slide){
@@ -2247,6 +2308,16 @@ details.goals-panel summary{
     document.getElementById('autofillBtn').addEventListener('click', autofillFromWeek);
     document.getElementById('downloadAllBtn').addEventListener('click', downloadAllSlides);
     document.getElementById('addClipBtn').addEventListener('click', addCollageClip);
+
+    document.querySelectorAll('.size-toggle-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        state.exportSize = btn.dataset.size;
+        document.querySelectorAll('.size-toggle-btn').forEach(function(b){
+          b.classList.toggle('active', b === btn);
+        });
+        renderPreview();
+      });
+    });
   }
 
   function init(){
