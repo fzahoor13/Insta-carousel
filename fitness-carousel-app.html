@@ -373,6 +373,10 @@ details.goals-panel summary{
   flex-direction:column;
   position:relative;
 }
+/* Story/Reel export: vertically balance in-flow content within the taller
+   1920px canvas. Elements positioned absolute (footers, water card, stat
+   rows, captions) are unaffected and stay pinned to the real edges. */
+.slide--story .slide-body{ justify-content:center !important; }
 
 /* Title — bright pastel cover treatment, scoped to this slide only */
 .slide-title{ background:linear-gradient(150deg, #FFC2D1 0%, #FFD3B0 100%); }
@@ -608,7 +612,7 @@ details.goals-panel summary{
   color:var(--text-muted);
   margin:12px 0 28px;
 }
-.body-bar-track{ height:24px; }
+.body-bar-track{ height:24px; flex:none; }
 .body-measure-grid{
   margin-top:44px;
   margin-bottom:28px;
@@ -1905,9 +1909,10 @@ details.goals-panel summary{
 
   function wrapForExportSize(html){
     if(state.exportSize !== 'story') return html;
-    return '<div style="width:1080px;height:1920px;background:#0B0D0E;display:flex;align-items:center;justify-content:center;box-sizing:border-box;">' +
-      '<div style="width:1080px;height:1080px;flex-shrink:0;">' + html + '</div>' +
-    '</div>';
+    var dims = exportDims();
+    return html.replace(/class="(slide[^"]*)"/, function(match, classes){
+      return 'class="' + classes + ' slide--story" style="height:' + dims.height + 'px;"';
+    });
   }
 
   function captureSlideCanvas(html){
