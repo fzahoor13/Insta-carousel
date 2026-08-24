@@ -1830,12 +1830,19 @@ details.goals-panel summary{
         reject(new Error('Could not read that video file.'));
       });
       function finish(){
+        var srcW = video.videoWidth || 640;
+        var srcH = video.videoHeight || 640;
+        var maxDim = 480;
+        var scale = Math.min(1, maxDim / Math.max(srcW, srcH));
         var canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 640;
+        canvas.width = Math.max(1, Math.round(srcW * scale));
+        canvas.height = Math.max(1, Math.round(srcH * scale));
         var ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
         URL.revokeObjectURL(url);
         resolve(dataUrl);
       }
@@ -2131,17 +2138,39 @@ details.goals-panel summary{
       renderPreview();
     });
   }
+  function downscaleImageFile(file, maxDim){
+    return new Promise(function(resolve, reject){
+      var img = new Image();
+      var url = URL.createObjectURL(file);
+      img.onload = function(){
+        var scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = function(){
+        URL.revokeObjectURL(url);
+        reject(new Error('Could not read that image file.'));
+      };
+      img.src = url;
+    });
+  }
+
   function bindPhotoField(inputId, previewId, photoKey){
     document.getElementById(inputId).addEventListener('change', function(e){
       var file = e.target.files[0];
       if(!file) return;
-      var reader = new FileReader();
-      reader.onload = function(){
-        state.photos[photoKey] = reader.result;
-        updatePhotoPreview(previewId, reader.result);
+      downscaleImageFile(file, 800).then(function(dataUrl){
+        state.photos[photoKey] = dataUrl;
+        updatePhotoPreview(previewId, dataUrl);
         renderPreview();
-      };
-      reader.readAsDataURL(file);
+      }).catch(function(){
+        showStatus('exportStatus', 'Could not read that image file — try a different photo.');
+      });
     });
   }
 
